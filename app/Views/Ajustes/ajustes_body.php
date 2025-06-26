@@ -3,7 +3,7 @@
 <!-- Sidebar para pantallas grandes (visible en lg y superior) -->
 <div class="main-container">
     <div class="sidebar d-none d-lg-block">
-        <h5 class="text-center text-white my-3">AdminProject</h5>
+        <h5 class="text-center text my-3">AdminProject</h5>
         <nav class="sidebar-nav mt-4">
             <!-- El enlace de Inicio apunta al dashboard -->
             <a href="<?= site_url('dashboard') ?>"><i class="fas fa-home"></i> INICIO</a>

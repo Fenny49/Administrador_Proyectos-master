@@ -2,7 +2,7 @@
 
 <div class="main-container">
     <aside class="sidebar d-none d-lg-block">
-        <h5 class="text-center text-white my-3">AdminProject</h5>
+        <h5 class="text-center text my-3">AdminProject</h5>
         <nav class="sidebar-nav mt-4">
             <a href="<?= site_url('dashboard') ?>"><i class="fas fa-home"></i> INICIO</a>
             <a href="<?= site_url('ajustes') ?>"><i class="fas fa-cog"></i> AJUSTES</a>
