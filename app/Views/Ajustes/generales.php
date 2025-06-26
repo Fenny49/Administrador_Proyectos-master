@@ -74,8 +74,8 @@
                 <div class="mb-4">
                     <label for="default_theme" class="form-label">Tema por Defecto para Usuarios</label>
                     <select name="default_theme" id="default_theme" class="form-select">
-                        <option value="dark" <?= ($settings['default_theme'] ?? 'light') == 'dark' ? 'selected' : '' ?>>Tema Oscuro</option>
-                        <option value="light" <?= ($settings['default_theme'] ?? 'light') == 'light' ? 'selected' : '' ?>>Tema Claro</option>
+                        <option value="dark" <?= ($settings['default_theme'] ?? 'light') == 'dark' ? 'selected' : '' ?>>Oscuro</option>
+                        <option value="light" <?= ($settings['default_theme'] ?? 'light') == 'light' ? 'selected' : '' ?>>Claro</option>
                     </select>
                 </div>
             </div>
