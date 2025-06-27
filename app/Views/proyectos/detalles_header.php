@@ -10,11 +10,8 @@
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
     
     <style>
-        /* ================================================================== */
-        /* ===== BLOQUE DE ESTILOS DINÁMICOS CORREGIDO Y FINAL ===== */
-        /* ================================================================== */
         
-        /* Define las variables para el Tema Claro (por defecto) */
+        /* Define las variables para el Tema Claro */
         :root {
             --body-bg: #f0f2f5;
             --panel-bg: #ffffff;

@@ -12,36 +12,19 @@
     <style>
         /* Define las variables para el Tema Claro (por defecto) */
         :root {
-            --body-bg: #f0f2f5;
-            --panel-bg: #ffffff;
-            --sidebar-bg: #ffffff; 
-            --sidebar-text: #495057;
-            --sidebar-header-text: #212529;
-            --sidebar-hover-bg: #e9ecef;
-            --main-text: #212529; 
-            --secondary-text: #6c757d;
-            --border-color: #dee2e6;
-            --form-input-bg: #ffffff;
-            --form-input-text: #212529;
-            --table-light-bg: #ffffff;
-            --table-light-text: #212529;
-            --brand-purple: #8e44ad; 
-            --accent-yellow: #ffc107;
+            --body-bg: #f0f2f5; --panel-bg: #ffffff; --sidebar-bg: #ffffff; 
+            --sidebar-text: #495057; --sidebar-header-text: #212529; --sidebar-hover-bg: #e9ecef;
+            --main-text: #212529; --secondary-text: #6c757d; --border-color: #dee2e6;
+            --form-input-bg: #ffffff; --form-input-text: #212529;
+            --brand-purple: #8e44ad; --accent-yellow: #ffc107;
         }
 
         /* Sobreescribe las variables solo si el body tiene la clase 'theme-dark' */
         body.theme-dark {
-            --body-bg: #20202d;
-            --panel-bg: #2c2c3e;
-            --sidebar-bg: #2c2c3e;
-            --sidebar-header-text: #ffffff;
-            --sidebar-text: #a0a0b0;
-            --sidebar-hover-bg: #20202d;
-            --main-text: #e0e0e0; /* Texto principal claro */
-            --secondary-text: #a0a0b0; /* Texto secundario gris claro */
-            --border-color: #4a4a6a;
-            --form-input-bg: #4a4a6a;
-            --form-input-text: #e0e0e0;
+            --body-bg: #20202d; --panel-bg: #2c2c3e; --sidebar-bg: #2c2c3e;
+            --sidebar-header-text: #ffffff; --sidebar-text: #a0a0b0; --sidebar-hover-bg: #20202d;
+            --main-text: #e0e0e0; --secondary-text: #a0a0b0; 
+            --border-color: #4a4a6a; --form-input-bg: #4a4a6a; --form-input-text: #e0e0e0;
         }
 
         /* --- Estilos Generales que usan las variables --- */
@@ -61,7 +44,20 @@
         /* Contenido y Formularios */
         .offcanvas { background-color: var(--sidebar-bg); }
         .main-panel, .data-panel { background-color: var(--panel-bg); color: var(--main-text); border-radius: 20px; padding: 1.5rem; box-shadow: 0 5px 15px rgba(0,0,0,0.05); } 
-        .form-label, small.text-muted { color: var(--secondary-text) !important; }
+        .panel-title, .form-legend { color: var(--main-text); font-weight: 600; }
+
+        /* Reemplaza la regla anterior por estas dos */
+
+        /* Las etiquetas principales ahora usan el color de texto principal del tema */
+        .form-label {
+            color: var(--main-text) !important; 
+        }
+
+        /* El texto pequeño y secundario mantiene el color de texto secundario */
+        small.text-muted {
+            color: var(--secondary-text) !important;
+        }
+
         .form-control, .form-select { background-color: var(--form-input-bg); border: 1px solid var(--border-color); color: var(--form-input-text); border-radius: 8px; }
         .form-control:focus, .form-select:focus { background-color: var(--form-input-bg); color: var(--form-input-text); border-color: var(--brand-purple); box-shadow: 0 0 0 0.25rem rgba(142, 68, 173, 0.25); }
     </style>
