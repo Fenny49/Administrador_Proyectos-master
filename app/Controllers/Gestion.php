@@ -21,7 +21,7 @@ class Gestion extends BaseController
         // --- INICIO DE LA MODIFICACIÓN ---
 
         // 1. Añadimos la carga de la configuración del tema y datos de sesión
-        $defaults = ['default_theme' => 'light']; 
+        $defaults = ['default_theme' => 'dark']; 
         $settings = $session->get('general_settings') ?? $defaults;
         
         $usuarioModel = new UsuarioModel();
