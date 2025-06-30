@@ -52,6 +52,23 @@ class Gestion extends BaseController
      */
     public function crearUsuario()
     {
+        // ===== INICIO DE LA VALIDACIÓN =====
+        $validation =  \Config\Services::validation();
+        $validation->setRules([
+            'Nombre'           => 'required|alpha_space',
+            'Apellido_Paterno' => 'required|alpha_space',
+            'Apellido_Materno' => 'required|alpha_space',
+            'Codigo_User'      => 'required|numeric',
+            'Correo'           => 'required|valid_email|is_unique[tbl_usuarios.Correo]',
+            'Password'         => 'required|min_length[8]'
+        ]);
+
+        if (!$validation->withRequest($this->request)->run()) {
+            // Si la validación falla, regresamos al formulario con los errores
+            return redirect()->back()->withInput()->with('errors', $validation->getErrors());
+        }
+        // ===== FIN DE LA VALIDACIÓN =====
+
         $usuarioModel = new UsuarioModel();
 
         $data = [
@@ -70,11 +87,24 @@ class Gestion extends BaseController
         return redirect()->to('/gestion')->with('success', 'Usuario creado con éxito.');
     }
 
+
     /**
      * Procesa la creación de un nuevo grupo. (SIN CAMBIOS)
      */
     public function crearGrupo()
     {
+        // ===== INICIO DE LA VALIDACIÓN =====
+        $validation =  \Config\Services::validation();
+        $validation->setRules([
+            'GPO_NOM' => 'required'
+        ]);
+
+        if (!$validation->withRequest($this->request)->run()) {
+            // Si la validación falla, regresamos al formulario
+            return redirect()->back()->withInput()->with('errors_grupo', $validation->getErrors());
+        }
+        // ===== FIN DE LA VALIDACIÓN =====
+
         $grupoModel = new GrupoModel();
 
         $data = [

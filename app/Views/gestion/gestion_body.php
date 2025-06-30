@@ -98,83 +98,183 @@
 <div class="modal fade" id="addUserModal" tabindex="-1">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
-            <?= form_open('/gestion/usuarios/crear') ?>
+            <form id="addUserForm" action="<?= site_url('/gestion/usuarios/crear') ?>" method="POST" class="needs-validation" novalidate>
+                <?= csrf_field() ?>
                 <div class="modal-header">
                     <h5 class="modal-title">Añadir Nuevo Usuario</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
-                    <div class="row">
-                        <div class="col-md-4 mb-3"><label>Nombre</label><input type="text" name="Nombre" class="form-control" required></div>
-                        <div class="col-md-4 mb-3"><label>Apellido Paterno</label><input type="text" name="Apellido_Paterno" class="form-control" required></div>
-                        <div class="col-md-4 mb-3"><label>Apellido Materno</label><input type="text" name="Apellido_Materno" class="form-control" required></div>
+                    <div class="alert alert-info" role="alert">
+                        <i class="fas fa-info-circle me-2"></i>
+                        Para guardar un nuevo usuario, es necesario llenar todos los datos requeridos.
+                    </div>
+                    <div id="addUserErrorAlert" class="alert alert-danger" role="alert" style="display: none;">
+                        No se puede continuar. Por favor, llene todos los campos obligatorios.
                     </div>
                     <div class="row">
-                        <div class="col-md-6 mb-3"><label>Email</label><input type="email" name="Correo" class="form-control" required></div>
-                        <div class="col-md-6 mb-3"><label>Código de Usuario</label><input type="number" name="Codigo_User" class="form-control" required></div>
+                        <div class="col-md-4 mb-3">
+                            <label for="addUserNombre" class="form-label">Nombre <span class="text-danger">*</span></label>
+                            <input type="text" id="addUserNombre" name="Nombre" class="form-control" required>
+                            <div class="invalid-feedback">El nombre es obligatorio.</div>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label for="addUserPaterno" class="form-label">Apellido Paterno <span class="text-danger">*</span></label>
+                            <input type="text" id="addUserPaterno" name="Apellido_Paterno" class="form-control" required>
+                            <div class="invalid-feedback">El apellido paterno es obligatorio.</div>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label for="addUserMaterno" class="form-label">Apellido Materno <span class="text-danger">*</span></label>
+                            <input type="text" id="addUserMaterno" name="Apellido_Materno" class="form-control" required>
+                            <div class="invalid-feedback">El apellido materno es obligatorio.</div>
+                        </div>
                     </div>
                     <div class="row">
-                        <div class="col-md-6 mb-3"><label>Contraseña</label><input type="password" name="Password" class="form-control" required></div>
-                        <div class="col-md-6 mb-3"><label>Rol</label><select name="Rol" class="form-select"><option value="administrador">Administrador</option><option value="capturista">Capturista</option></select></div>
+                        <div class="col-md-6 mb-3">
+                            <label for="addUserCorreo" class="form-label">Email <span class="text-danger">*</span></label>
+                            <input type="email" id="addUserCorreo" name="Correo" class="form-control" required>
+                            <div class="invalid-feedback">Por favor, ingresa un correo válido.</div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="addUserCodigo" class="form-label">Código de Usuario <span class="text-danger">*</span></label>
+                            <input type="number" id="addUserCodigo" name="Codigo_User" class="form-control" required>
+                            <div class="invalid-feedback">El código es obligatorio.</div>
+                        </div>
                     </div>
-                     <div class="form-group mb-3"><label>Estado</label><select name="Estado" class="form-select"><option value="1">Activo</option><option value="0">Inactivo</option></select></div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="addUserPass" class="form-label">Contraseña <span class="text-danger">*</span></label>
+                            <input type="password" id="addUserPass" name="Password" class="form-control" required>
+                            <div class="invalid-feedback">La contraseña es obligatoria.</div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="addUserRol" class="form-label">Rol</label>
+                            <select name="Rol" id="addUserRol" class="form-select"><option value="administrador">Administrador</option><option value="capturista">Capturista</option></select>
+                        </div>
+                    </div>
+                     <div class="form-group mb-3">
+                         <label for="addUserEstado" class="form-label">Estado</label>
+                         <select name="Estado" id="addUserEstado" class="form-select"><option value="1">Activo</option><option value="0">Inactivo</option></select>
+                     </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
                     <button type="submit" class="btn btn-primary">Guardar Usuario</button>
                 </div>
-            <?= form_close() ?>
+            </form>
         </div>
     </div>
 </div>
 
 <div class="modal fade" id="addGroupModal" tabindex="-1">
-     <div class="modal-dialog">
+    <div class="modal-dialog">
         <div class="modal-content">
-              <?= form_open('/gestion/grupos/crear') ?>
+             <form id="addGroupForm" action="<?= site_url('/gestion/grupos/crear') ?>" method="POST" class="needs-validation" novalidate>
+                <?= csrf_field() ?>
                 <div class="modal-header"><h5 class="modal-title">Añadir Nuevo Grupo</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
                 <div class="modal-body">
-                    <div class="mb-3"><label>Nombre del Grupo</label><input type="text" name="GPO_NOM" class="form-control" required></div>
-                    <div class="mb-3"><label>Descripción</label><textarea name="GPO_DESC" class="form-control" rows="3"></textarea></div>
+                    <div class="alert alert-info" role="alert">
+                        <i class="fas fa-info-circle me-2"></i>
+                        Para guardar un nuevo grupo, es necesario llenar todos los datos requeridos.
+                    </div>
+                    <div id="addGroupErrorAlert" class="alert alert-danger" role="alert" style="display: none;">
+                        No se puede continuar. Por favor, llene todos los campos obligatorios.
+                    </div>
+                    <div class="mb-3">
+                        <label for="addGroupName" class="form-label">Nombre del Grupo <span class="text-danger">*</span></label>
+                        <input type="text" id="addGroupName" name="GPO_NOM" class="form-control" required>
+                        <div class="invalid-feedback">El nombre del grupo es obligatorio.</div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="addGroupDesc" class="form-label">Descripción</label>
+                        <textarea id="addGroupDesc" name="GPO_DESC" class="form-control" rows="3"></textarea>
+                    </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
                     <button type="submit" class="btn btn-primary">Guardar Grupo</button>
                 </div>
-            <?= form_close() ?>
+            </form>
         </div>
     </div>
 </div>
 
 
 <script>
-    // ===== SCRIPT ACTUALIZADO =====
-    document.addEventListener('DOMContentLoaded', function() {
-        const userTable = document.getElementById('user-table');
-        const groupTable = document.getElementById('group-table');
-        const showUsersBtn = document.getElementById('show-users');
-        const showGroupsBtn = document.getElementById('show-groups');
-        // Seleccionamos los nuevos botones de añadir por su ID
-        const addUserBtn = document.getElementById('btn-add-user');
-        const addGroupBtn = document.getElementById('btn-add-group');
+document.addEventListener('DOMContentLoaded', function() {
+    // --- Lógica para alternar vistas (Usuarios/Grupos) ---
+    const userTable = document.getElementById('user-table');
+    const groupTable = document.getElementById('group-table');
+    const showUsersBtn = document.getElementById('show-users');
+    const showGroupsBtn = document.getElementById('show-groups');
+    const addUserBtn = document.getElementById('btn-add-user');
+    const addGroupBtn = document.getElementById('btn-add-group');
 
-        function toggleElements() {
-            const isUsersView = showUsersBtn.checked;
+    function toggleElements() {
+        const isUsersView = showUsersBtn.checked;
+        userTable.style.display = isUsersView ? 'block' : 'none';
+        groupTable.style.display = isUsersView ? 'none' : 'block';
+        addUserBtn.style.display = isUsersView ? 'inline-block' : 'none';
+        addGroupBtn.style.display = isUsersView ? 'none' : 'inline-block';
+    }
 
-            userTable.style.display = isUsersView ? 'block' : 'none';
-            groupTable.style.display = isUsersView ? 'none' : 'block';
+    showUsersBtn.addEventListener('change', toggleElements);
+    showGroupsBtn.addEventListener('change', toggleElements);
+    toggleElements(); // Estado inicial
 
-            // Mostramos u ocultamos el botón de añadir correspondiente
-            addUserBtn.style.display = isUsersView ? 'inline-block' : 'none';
-            addGroupBtn.style.display = isUsersView ? 'none' : 'inline-block';
+    // --- Lógica para los modales ---
+
+    // --- Modal de Añadir Usuario ---
+    const addUserModal = document.getElementById('addUserModal');
+    const addUserForm = document.getElementById('addUserForm');
+    const addUserErrorAlert = document.getElementById('addUserErrorAlert');
+
+    // 1. Lógica para el botón Guardar
+    addUserForm.addEventListener('submit', function(event) {
+        // Si el formulario no es válido
+        if (!addUserForm.checkValidity()) {
+            event.preventDefault(); // Previene el envío del formulario
+            event.stopPropagation();
+            addUserErrorAlert.style.display = 'block'; // Muestra la alerta de error
+        } else {
+            // Si el formulario es válido, nos aseguramos que la alerta esté oculta
+            addUserErrorAlert.style.display = 'none';
         }
-
-        showUsersBtn.addEventListener('change', toggleElements);
-        showGroupsBtn.addEventListener('change', toggleElements);
-
-        // Llamamos a la función al cargar la página para establecer el estado inicial correcto
-        toggleElements();
+        // Añade la clase de Bootstrap para mostrar los mensajes de validación de cada campo
+        addUserForm.classList.add('was-validated');
     });
+
+    // 2. Lógica para el botón Cancelar (y cierre del modal)
+    addUserModal.addEventListener('hidden.bs.modal', function() {
+        addUserForm.reset(); // Borra todos los datos del formulario
+        addUserForm.classList.remove('was-validated'); // Quita las clases de validación
+        addUserErrorAlert.style.display = 'none'; // Oculta la alerta de error
+    });
+
+    // --- Modal de Añadir Grupo ---
+    const addGroupModal = document.getElementById('addGroupModal');
+    const addGroupForm = document.getElementById('addGroupForm');
+    const addGroupErrorAlert = document.getElementById('addGroupErrorAlert');
+
+    // 1. Lógica para el botón Guardar
+    addGroupForm.addEventListener('submit', function(event) {
+        if (!addGroupForm.checkValidity()) {
+            event.preventDefault();
+            event.stopPropagation();
+            addGroupErrorAlert.style.display = 'block';
+        } else {
+            addGroupErrorAlert.style.display = 'none';
+        }
+        addGroupForm.classList.add('was-validated');
+    });
+
+    // 2. Lógica para el botón Cancelar (y cierre del modal)
+    addGroupModal.addEventListener('hidden.bs.modal', function() {
+        addGroupForm.reset();
+        addGroupForm.classList.remove('was-validated');
+        addGroupErrorAlert.style.display = 'none';
+    });
+});
 </script>
 
 </body>
