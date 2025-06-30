@@ -18,7 +18,7 @@ class Dashboard extends BaseController
         }
 
         // ===== AÑADIDO: Lógica para leer el tema guardado =====
-        $defaults = ['default_theme' => 'light']; // Tema por defecto
+        $defaults = ['default_theme' => 'dark']; // Tema por defecto
         $settings = $session->get('general_settings') ?? $defaults;
 
         // Añadimos los settings a los datos que se pasan a la vista
@@ -44,6 +44,9 @@ class Dashboard extends BaseController
         if (!$session->get('is_logged_in')) {
             return redirect()->to('/login');
         }
+
+        $defaults = ['default_theme' => 'dark']; // Tema oscuro por defecto
+        $settings = $session->get('general_settings') ?? $defaults;
 
         $yearFromRequest = $this->request->getVar('anio');
         if ($yearFromRequest) {
@@ -71,10 +74,6 @@ class Dashboard extends BaseController
         } else {
             $proyectos = $query->where('id_usuario_asignado', $userData['id'])->findAll();
         }
-        
-        // ===== AÑADIDO: Lógica para leer el tema guardado =====
-        $defaults = ['default_theme' => 'light']; // Tema por defecto
-        $settings = $session->get('general_settings') ?? $defaults;
         
         // Unificamos todos los datos que la vista necesita
         $data = [

@@ -11,10 +11,52 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
     <style>
-        /* Estilos base (sin cambios) */
-        :root { --bg-dark: #20202d; --panel-bg: #2c2c3e; --panel-light-bg: #4a4a6a; --text-light: #e0e0e0; --text-muted: #a0a0b0; --accent-green: #28a745; --accent-teal: #17a2b8; --accent-yellow: #ffc107; --accent-red: #dc3545; --brand-purple: #8e44ad; } 
-        body { background-color: var(--bg-dark); color: var(--text-light); font-family: 'Poppins', sans-serif; font-size: 0.9rem; } 
+                /* Estilos base (sin cambios) */
+        :root {
+            --body-bg: #f0f2f5;
+            --panel-bg: #ffffff;
+            --sidebar-bg: #ffffff; 
+            --sidebar-text: #495057;
+            --sidebar-header-text: #212529;
+            --sidebar-hover-bg: #e9ecef;
+            --main-text: #212529; 
+            --secondary-text: #6c757d;
+            --border-color: #dee2e6;
+            --form-input-bg: #ffffff;
+            --form-input-text: #212529;
+            
+            /* Variables de acento comunes */
+            --brand-purple: #8e44ad; 
+            --accent-green: #28a745; 
+            --accent-teal: #17a2b8;
+            --accent-yellow: #ffc107; 
+            --accent-red: #dc3545; 
+        }
+
+        /* Sobreescribe las variables solo si el body tiene la clase 'theme-dark' */
+        /* Estas son las variables de TU tema oscuro original */
+        body.theme-dark {
+            --body-bg: #20202d;
+            --panel-bg: #2c2c3e;
+            --sidebar-bg: #20202d; /* Usamos el más oscuro para el sidebar */
+            --sidebar-header-text: #ffffff;
+            --sidebar-text: #a0a0b0;
+            --sidebar-hover-bg: #2c2c3e;
+            --main-text: #e0e0e0; 
+            --secondary-text: #a0a0b0; 
+            --border-color: #4a4a6a;
+            --form-input-bg: #4a4a6a;
+            --form-input-text: #e0e0e0;
+        }
+
+        /*body { background-color: var(--bg-dark); color: var(--text-light); font-family: 'Poppins', sans-serif; font-size: 0.9rem; } 
+        .main-container { display: flex; min-height: 100vh; } */
+
+        /* --- Estilos Generales que usan las variables --- */
+        body { background-color: var(--body-bg); color: var(--main-text); font-family: 'Poppins', sans-serif; font-size: 0.9rem; } 
         .main-container { display: flex; min-height: 100vh; } 
+        
+        
         .sidebar { width: 220px; background-color: var(--bg-dark); padding: 20px 0; flex-shrink: 0; border-right: 1px solid #333; }
         .sidebar-nav a { display: flex; align-items: center; padding: 12px 20px; color: var(--text-muted); text-decoration: none; transition: all 0.3s ease; font-weight: 500; } 
         .sidebar-nav a:hover, .sidebar-nav a.active { background-color: var(--brand-purple); color: #fff; border-radius: 0 30px 30px 0; margin-left: -1px; } 

@@ -23,7 +23,18 @@ class Catalogos extends BaseController
     // Muestra la página principal de "Ajustes > Catálogos"
     public function index()
     {
-        return view('Catalogos/catalogos_body.php');
+ // --- Lógica de Sesión y Tema ---
+        $session = session();
+        $defaults = ['default_theme' => 'dark']; 
+        $settings = $session->get('general_settings') ?? $defaults;
+        $data = [
+            'settings' => $settings,
+            'userData' => $session->get('userData')
+        ];
+
+        // --- Carga de Vistas en 3 Partes (EL CAMBIO IMPORTANTE) ---
+        $show_page = view('Catalogos/catalogos_body.php', $data);
+        return $show_page;
     }
 
     // Muestra la lista de un catálogo específico (ej: /catalogos/estatus)
@@ -33,16 +44,24 @@ class Catalogos extends BaseController
         if (!$config) {
             throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound();
         }
+  // --- Lógica de Sesión y Tema ---
+        $session = session();
+        $defaults = ['default_theme' => 'dark']; 
+        $settings = $session->get('general_settings') ?? $defaults;
 
+        // --- Unificamos todos los datos para la vista ---
         $data = [
-            'items' => $this->catalogModel->getAll($config['sp_read_all']),
-            'title' => $config['title'],
+            'settings'    => $settings,
+            'userData'    => $session->get('userData'),
+            'items'       => $this->catalogModel->getAll($config['sp_read_all']),
+            'title'       => $config['title'],
             'catalogType' => $catalogType,
-            'id_field' => $config['id_field'],
-            'name_field' => $config['name_field']
-        ];
-
-        return view('Catalogos/lista_catalogos.php', $data);
+            'id_field'    => $config['id_field'],
+            'name_field'  => $config['name_field']
+        ];     
+        // --- Carga de Vistas en 3 Partes (EL CAMBIO IMPORTANTE) ---
+        $show_page = view('Catalogos/lista_catalogos.php', $data);
+        return $show_page;
     }
 
     // Guarda un nuevo registro (se llama vía AJAX)

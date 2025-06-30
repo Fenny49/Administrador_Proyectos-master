@@ -44,7 +44,7 @@ class Ajustes extends BaseController
         $defaults = [
             'allow_new_projects'    => '1', 'show_user_avatar'      => '1',
             'allow_notifications'   => '1', 'feedback_from_users'   => '1',
-            'active_users'          => 'all', 'default_theme'         => 'light',
+            'active_users'          => 'all', 'default_theme'         => 'dark',
         ];
         $data['settings'] = $session->get('general_settings') ?? $defaults;
         $data['userData'] = $session->get('userData');

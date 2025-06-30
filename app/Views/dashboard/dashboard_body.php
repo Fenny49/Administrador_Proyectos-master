@@ -1,9 +1,9 @@
-<body>
+<body class="<?= ($settings['default_theme'] ?? 'dark') === 'dark' ? 'theme-dark' : 'theme-light' ?>">
 
 <!-- ... (Sidebar y Offcanvas se quedan igual) ... -->
 <div class="main-container">
     <div class="sidebar d-none d-lg-block">
-        <h5 class="text-center text-white my-3">AdminProject</h5>
+        <h5 class="text-center text my-3">AdminProject</h5>
         <nav class="sidebar-nav mt-4">
             <a href="<?= site_url('dashboard') ?>" class="active"><i class="fas fa-home"></i> INICIO</a>
             <!--<a href="<?= site_url('recursos') ?>"><i class="fas fa-star"></i> RECURSOS</a> -->
