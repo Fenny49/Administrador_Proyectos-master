@@ -1,16 +1,19 @@
 <?php
 
 namespace App\Controllers;
-
+use CodeIgniter\API\ResponseTrait;
+use App\Models\Proyecto;
+use App\Models\ProyectoModel;
 use Config\Database;
 
 class Proyectos extends BaseController
 {
+     use ResponseTrait;
     /**
      * Muestra la página de detalles de un proyecto específico.
      * @param int $projectId El ID del proyecto que se va a mostrar.
      */
-    public function detalles($projectId)
+     public function detalles($projectId)
     {
         $session = session();
         if (!$session->get('is_logged_in')) {
@@ -75,5 +78,38 @@ class Proyectos extends BaseController
         $show_page .= view('proyectos/detalles_body', $data);
         $show_page .= view('proyectos/detalles_footer', $data);
         return $show_page;
+    }
+
+         public function update()
+    {
+        // ... (La validación del rol y la obtención de datos se quedan igual) ...
+        if (session()->get('rol') !== 'administrador') {
+            return $this->failForbidden('No tienes permiso para realizar esta acción.');
+        }
+        $json = $this->request->getJSON();
+        $id = $json->id_proyecto ?? null;
+        if (!$id) {
+            return $this->fail('No se proporcionó un ID de proyecto válido.');
+        }
+        $data = [
+            'nombre'        => $json->nombre,
+            'descripcion'   => $json->descripcion,
+            'prioridad'     => $json->prioridad,
+            'status'        => $json->status,
+            'fecha_inicio'  => $json->fecha_inicio,
+            'fecha_fin'     => $json->fecha_fin
+        ];
+
+        $proyectoModel = new ProyectoModel();
+
+        // --- ¡CAMBIO IMPORTANTE AQUÍ! ---
+        // En lugar de llamar a $proyectoModel->update(), llamamos a nuestro nuevo método.
+        if ($proyectoModel->updateProjectSP($id, $data)) {
+            // La lógica de respuesta exitosa es la misma
+            return $this->respondUpdated(['message' => 'Proyecto actualizado con éxito mediante SP.']);
+        } else {
+            // La lógica de respuesta de error es la misma
+            return $this->fail('No se pudo actualizar el proyecto mediante el procedimiento almacenado.');
+        }
     }
 }

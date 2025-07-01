@@ -99,5 +99,47 @@
         .pagination .page-item .page-link { background-color: var(--panel-light-bg); border: none; color: var(--text-light); margin: 0 3px; border-radius: 5px; } 
         .pagination .page-item.active .page-link { background-color: var(--brand-purple); } 
         .pagination .page-item.disabled .page-link { background-color: #3a3a4a; color: #6c757d; }
+
+     
+
+        /* Sobreescribe las variables solo si el body tiene la clase 'theme-dark' */
+        body.theme-dark {
+            --body-bg: #20202d;
+            --panel-bg: #2c2c3e;
+            --sidebar-bg: #2c2c3e;
+            --sidebar-header-text: #ffffff;
+            --sidebar-text: #a0a0b0;
+            --sidebar-hover-bg: #20202d;
+            --main-text: #e0e0e0; 
+            --secondary-text: #a0a0b0;
+            --border-color: #4a4a6a;
+            --form-input-bg: #4a4a6a;
+            --form-input-text: #e0e0e0;
+        }
+        /* --- Estilos Generales que usan las variables --- */
+
+        /* Sidebar */
+        .sidebar { width: 220px; background-color: var(--sidebar-bg); padding: 20px 0; flex-shrink: 0; border-right: 1px solid var(--border-color); }
+        .sidebar-header { padding: 0 20px 20px 20px; font-weight: 600; font-size: 1.2rem; color: var(--sidebar-header-text); text-align: center; }
+        .sidebar-nav a { display: flex; align-items: center; padding: 12px 20px; color: var(--text-muted); text-decoration: none; transition: all 0.3s ease; font-weight: 500; } 
+        .sidebar-nav a:hover, .sidebar-nav a.active { background-color: var(--brand-purple); color: #fff; border-radius: 0 30px 30px 0; margin-left: -1px; } 
+        .sidebar-nav a.active { background-color: var(--brand-purple); color: #fff !important; border-radius: 0 30px 30px 0; margin-left: -1px; }
+        .sidebar-nav a.active i, .sidebar-nav a.active:hover { color: #fff; }
+        .sidebar-nav a i { margin-right: 15px; width: 20px; text-align: center; }
+        
+        .badge-priority { padding: 6px 15px; border-radius: 20px; color: #fff; font-weight: 500; min-width: 90px; text-align: center; } .badge-normal { background-color: var(--accent-green); } .badge-media { background-color: var(--accent-yellow); color: #333; } .badge-alta { background-color: var(--accent-red); } .badge-activo { background-color: var(--accent-green); } .badge-pendiente { background-color: var(--accent-teal); } .badge-atrasado { background-color: var(--accent-red); } .table-actions a { color: var(--text-muted); font-size: 1.2rem; margin: 0 5px; }
+        .pagination { justify-content: center; margin-top: 20px; } 
+        .pagination .page-item .page-link { background-color: var(--panel-light-bg); border: none; color: var(--text-light); margin: 0 3px; border-radius: 5px; } 
+        .pagination .page-item.active .page-link { background-color: var(--brand-purple); } 
+        .pagination .page-item.disabled .page-link { background-color: #3a3a4a; color: #6c757d; }
+
+        /* Contenido y Formularios */
+        .offcanvas { background-color: var(--sidebar-bg); }
+         .offcanvas-body, .offcanvas-title { color:rgb(203, 210, 216); }
+        .main-panel, .data-panel { background-color: var(--panel-bg); border-radius: 20px; padding: 1.5rem; box-shadow: 0 5px 15px rgba(0,0,0,0.05); } 
+      
     </style>
+
+
+
 </head>

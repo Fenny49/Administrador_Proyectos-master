@@ -18,27 +18,9 @@ $routes->get('/ajustes', 'Ajustes::index');
 $routes->get('/logout', 'Login::logout');
 $routes->get('/proyectos/nuevo', 'Projects::new'); 
 $routes->post('/proyectos/crear', 'Projects::create');
-
-// Ruta para la nueva sección de gestión de Usuarios y Grupos
-$routes->get('/gestion', 'Gestion::index');
-// El (:num) es un comodín que captura un número (el ID del proyecto) de la URL
-$routes->get('/proyectos/(:num)/gestion', 'Gestion::index/$1');
-// Ruta para mostrar la página de gestión de usuarios y grupos
-
-// Rutas para procesar los formularios de creación
-$routes->post('/gestion/usuarios/crear', 'Gestion::crearUsuario');
-$routes->post('/gestion/grupos/crear', 'Gestion::crearGrupo');
-
-// Ruta para ver los detalles de un proyecto específico
-$routes->get('/proyectos/detalles/(:num)', 'Proyectos::detalles/$1');
-
-//$routes->get('/tareas', 'Tareas::index');
-//$routes->post('/tareas/crear', 'Tareas::crear');
-//$routes->get('/recursos', 'Recursos::index');
-//$routes->get('/tiempos', 'Tiempos::index');
-
-
-
+$routes->get('/tareas', 'Tareas::index');
+$routes->post('/tareas/crear', 'Tareas::crear');
+$routes->get('/recursos', 'Recursos::index');
 
 // En app/Config/Routes.php
 
@@ -61,3 +43,34 @@ $routes->get('/ajustes/masterdata', 'Ajustes::masterData');
 
 // Routes especificas para la funcionalidad (NO CONECTADOS A LA BD)
 $routes->post('/ajustes/generales/guardar', 'Ajustes::guardarGenerales');
+
+//Ruta de la descarga en csv
+$routes->get('dashboard/export_csv', 'Dashboard::export_csv');
+
+$routes->get('/proyectos/nuevo', 'Projects::new'); 
+$routes->post('/proyectos/crear', 'Projects::create');
+
+// Ruta para la nueva sección de gestión de Usuarios y Grupos
+$routes->get('/gestion', 'Gestion::index');
+// El (:num) es un comodín que captura un número (el ID del proyecto) de la URL
+$routes->get('/proyectos/(:num)/gestion', 'Gestion::index/$1');
+// Ruta para mostrar la página de gestión de usuarios y grupos
+
+// Rutas para procesar los formularios de creación
+$routes->post('/gestion/usuarios/crear', 'Gestion::crearUsuario');
+$routes->post('/gestion/grupos/crear', 'Gestion::crearGrupo');
+
+// Ruta para ver los detalles de un proyecto específico
+$routes->get('/proyectos/detalles/(:num)', 'Proyectos::detalles/$1');
+
+
+// En app/Config/Routes.php
+$routes->get('/ajustes', 'Ajustes::index');
+$routes->get('/ajustes/generales', 'Ajustes::generales');
+$routes->get('/ajustes/usuarios', 'Ajustes::usuarios');
+$routes->post('/proyectos/update', 'Proyectos::update');
+$routes->post('tareas/ajax_gestionar_tarea_criterio', 'Tareas::ajax_gestionar_tarea_criterio');
+
+// Y también para las otras rutas AJAX que usas
+$routes->post('tareas/ajax_actualizar_criterio', 'Tareas::ajax_actualizar_criterio');
+$routes->post('tareas/ajax_eliminar_criterio', 'Tareas::ajax_eliminar_criterio');
