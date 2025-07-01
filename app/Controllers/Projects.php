@@ -4,98 +4,110 @@ namespace App\Controllers;
 
 use App\Models\UsuarioModel;
 use App\Models\GrupoModel;
+use App\Models\ProyectoModel; // Aseguramos que el modelo de Proyecto esté importado
 use Config\Database;
 
 class Projects extends BaseController
 {
     /**
      * Muestra el formulario para crear un nuevo proyecto.
-     * Esta función no cambia.
+     * Esta función está correcta y ya incluye la lógica del tema.
      */
     public function new()
     {
-       // --- 1. OBTENER DATOS DE SESIÓN Y TEMA (LA PARTE AÑADIDA) ---
         $session = session();
         if (!$session->get('is_logged_in')) {
             return redirect()->to('/login');
         }
         
-        // Carga la configuración del tema, usando 'dark' como predeterminado si no existe
         $defaults = ['default_theme' => 'dark'];
         $settings = $session->get('general_settings') ?? $defaults;
 
         $usuarioModel = new UsuarioModel();
         $grupoModel = new GrupoModel();
-        $anio_trabajo = session()->get('anio_trabajo') ?? date('Y');
+        $anio_trabajo = $session->get('anio_trabajo') ?? date('Y');
 
         $data = [
-            'settings'      => $settings, 
+            'settings'      => $settings,
             'page_title'    => 'Añadir Nuevo Proyecto',
             'usuarios'      => $usuarioModel->where('Estado', 1)->findAll(),
             'grupos'        => $grupoModel->findAll(),
             'anio_trabajo'  => $anio_trabajo
         ];
 
-        // Carga el header en una variable
         $html_output  = view('projects/header', $data);
-        
-        // Carga el contenido del body y lo añade a la variable
         $html_output .= view('projects/new', $data);
-        
-        // Carga el footer y lo añade al final
         $html_output .= view('projects/footer', $data);
         
-        // Devuelve el string HTML completo al navegador
         return $html_output;
     }
 
     /**
-     * Recibe los datos del formulario y llama al proceso almacenado para crear el proyecto.
+     * Recibe los datos del formulario y los guarda usando el Modelo y Transacciones.
+     * (Versión restaurada sin Proceso Almacenado)
      */
     public function create()
     {
-        // 1. Recoger los datos del formulario (esto no cambia)
-        $nombre_proyecto = $this->request->getPost('nombre_proyecto');
-        $descripcion = $this->request->getPost('descripcion');
-        $prioridad = $this->request->getPost('prioridad');
-        $responsable_id = $this->request->getPost('responsable_id');
-        $fecha_inicio = $this->request->getPost('fecha_inicio');
-        $fecha_fin = $this->request->getPost('fecha_fin');
-        
-        // 2. Convertir los arrays de IDs en strings separadas por comas
+        // Conectamos a la base de datos para poder usar transacciones
+        $db = Database::connect();
+        $proyectoModel = new ProyectoModel();
+
+        // 1. Recoger los datos del formulario
+        $proyectoData = [
+            'nombre'              => $this->request->getPost('nombre_proyecto'),
+            'descripcion'         => $this->request->getPost('descripcion'),
+            'prioridad'           => $this->request->getPost('prioridad'),
+            'id_usuario_asignado' => $this->request->getPost('responsable_id'),
+            'fecha_inicio'        => $this->request->getPost('fecha_inicio'),
+            'fecha_fin'           => $this->request->getPost('fecha_fin'),
+            'status'              => 'Activo', // El estado es 'Activo' por defecto
+            'anio'                => date('Y', strtotime($this->request->getPost('fecha_inicio')))
+        ];
+
+        // Recogemos los arrays de usuarios y grupos asignados
         $usuariosAsignados = $this->request->getPost('usuarios') ?? [];
         $gruposAsignados = $this->request->getPost('grupos') ?? [];
+
+        // 2. Iniciar una transacción para garantizar la integridad de los datos
+        $db->transStart();
+
+        // 2.1. Insertar el proyecto principal usando el Modelo
+        $proyectoModel->insert($proyectoData);
+
+        // 2.2. Obtener el ID del proyecto que acabamos de crear
+        $newProjectId = $proyectoModel->getInsertID();
+
+        // 2.3. Preparar y guardar las asignaciones en la tabla DET_GRUPOS
+        $asignaciones = [];
+        if (!empty($usuariosAsignados) && !empty($gruposAsignados)) {
+            foreach ($usuariosAsignados as $userId) {
+                foreach ($gruposAsignados as $groupId) {
+                    $asignaciones[] = [
+                        'PROY_ID' => $newProjectId,
+                        'USU_ID'  => $userId,
+                        'GPO_ID'  => $groupId
+                    ];
+                }
+            }
+        }
         
-        $usuariosIDsString = implode(',', $usuariosAsignados);
-        $gruposIDsString = implode(',', $gruposAsignados);
-
-        try {
-            // 3. Preparar la llamada al Proceso Almacenado
-            $db = Database::connect();
-            $sql = "EXEC dbo.sp_CrearProyectoCompleto @nombre=?, @descripcion=?, @prioridad=?, @id_usuario_asignado=?, @fecha_inicio=?, @fecha_fin=?, @UsuariosIDs=?, @GruposIDs=?";
-
-            // 4. Ejecutar el Proceso Almacenado con los parámetros
-            $db->query($sql, [
-                $nombre_proyecto,
-                $descripcion,
-                $prioridad,
-                $responsable_id,
-                $fecha_inicio,
-                $fecha_fin,
-                $usuariosIDsString,
-                $gruposIDsString
-            ]);
-
-            // Si la ejecución fue exitosa (no hubo excepciones), mostrar mensaje de éxito
-            session()->setFlashdata('success', '¡Proyecto creado con éxito mediante Proceso Almacenado!');
-
-        } catch (\Exception $e) {
-            // Si el proceso almacenado falla y lanza un error, lo capturamos aquí
-            log_message('error', '[ERROR SP] ' . $e->getMessage()); // Opcional: guardar el error en los logs
-            session()->setFlashdata('error', 'No se pudo crear el proyecto. Error de base de datos.');
+        // Si hay asignaciones, las insertamos en un solo lote
+        if (!empty($asignaciones)) {
+            $db->table('dbo.DET_GRUPOS')->insertBatch($asignaciones);
         }
 
-        // 5. Redireccionar al usuario al panel principal
+        // 3. Finalizar la transacción
+        $db->transComplete();
+
+        // 4. Redireccionar con un mensaje de éxito o error
+        if ($db->transStatus() === false) {
+            // La transacción falló
+            session()->setFlashdata('error', 'No se pudo crear el proyecto. La transacción falló.');
+        } else {
+            // La transacción fue exitosa
+            session()->setFlashdata('success', '¡Proyecto creado y equipo asignado con éxito!');
+        }
+
         return redirect()->to(base_url('/dashboard'));
     }
 }

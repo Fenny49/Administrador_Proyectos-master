@@ -49,6 +49,11 @@ $routes->get('dashboard/export_csv', 'Dashboard::export_csv');
 
 $routes->get('/proyectos/nuevo', 'Projects::new'); 
 $routes->post('/proyectos/crear', 'Projects::create');
+$routes->post('projects/create', 'Projects::create');
+
+// También asegúrate de tener la ruta para el formulario
+$routes->get('projects/new', 'Projects::new');
+
 
 // Ruta para la nueva sección de gestión de Usuarios y Grupos
 $routes->get('/gestion', 'Gestion::index');
