@@ -33,7 +33,6 @@
 
             <div class="d-flex align-items-center justify-content-between flex-wrap mb-4 w-100">
                 <div class="actions-bar mb-2 mb-md-0 d-flex gap-2">
-                    <a href="<?= site_url('dashboard/export_csv?anio=' . esc($selectedYear, 'url')) ?>" class="btn btn-secondary btn-custom"><i class="fas fa-download me-2"></i>Download CSV</a>
                     <!-- Los botones de exportación de DataTables se añadirán aquí -->
                     <?php if ($userData['rol'] === 'administrador'): ?>
                         <a href="<?= base_url('/proyectos/nuevo') ?>" class="btn btn-add btn-custom"><i class="fas fa-plus me-2"></i>Añadir Proyecto</a>
@@ -69,7 +68,7 @@
                                 <td><span class="badge-priority badge-<?= strtolower(esc($project['status'])) ?>"><?= esc($project['status']) ?></span></td>
                                 <td class="table-actions">
                                     <a href="<?= site_url('proyectos/detalles/' . $project['id_proyecto']) ?>" title="Ver Detalles"><i class="fas fa-list-alt"></i></a>
-                                    <a href="<?= site_url('tareas') ?>" title="Añadir Tareas"><i class="fas fa-plus-circle"></i></a>
+                                   <a href="<?= site_url('tareas/index/' . $project['id_proyecto']) ?>" title="Añadir Tareas"><i class="fas fa-plus-circle"></i></a>
                                     <a href="<?= site_url('proyectos/' . $project['id_proyecto'] . '/gestion') ?>" title="Gestionar Usuarios"><i class="fas fa-user-plus"></i></a>
                                     
                                     <?php if ($userData['rol'] === 'administrador'): ?>
@@ -182,10 +181,57 @@ document.addEventListener('DOMContentLoaded', function () {
     
     
  const table = $('#projectsTable').DataTable({
-        "dom": 'Bt', "paging": true, "pageLength": 4, "language": { "emptyTable": "No hay proyectos para mostrar." }, "columnDefs": [ { "orderable": false, "targets": 7 } ],
-        "buttons": [ { extend: 'collection', text: '<i class="fas fa-upload me-2"></i>Exportar', className: 'btn-secondary btn-custom', buttons: [ { extend: 'excelHtml5', text: '<i class="fas fa-file-excel me-2"></i>Excel', exportOptions: { columns: [ 0, 1, 2, 3, 4, 5, 6 ] } }, { extend: 'pdfHtml5', text: '<i class="fas fa-file-pdf me-2"></i>PDF', exportOptions: { columns: [ 0, 1, 2, 3, 4, 5, 6 ] } }, { extend: 'print', text: '<i class="fas fa-print me-2"></i>Imprimir', exportOptions: { columns: [ 0, 1, 2, 3, 4, 5, 6 ] } } ] } ]
+        "dom": 'Bt', // 'B' para Buttons, 't' para table
+        "paging": true,
+        "pageLength": 4, // Muestras 4 registros por página
+        "language": {
+            "emptyTable": "No hay proyectos para mostrar."
+        },
+        "columnDefs": [
+            { "orderable": false, "targets": 7 } // La columna de acciones no se puede ordenar
+        ],
+        // --- CONFIGURACIÓN DE BOTONES CORREGIDA ---
+        buttons: [
+            {
+                extend: 'collection', // Crea un botón desplegable
+                text: '<i class="fas fa-upload me-2"></i>Exportar',
+                className: 'btn-secondary btn-custom',
+                buttons: [
+                    // AÑADIDO: Opción para exportar a CSV
+                    {
+                        extend: 'csvHtml5',
+                        text: '<i class="fas fa-file-csv me-2"></i>CSV',
+                        exportOptions: {
+                            columns: [0, 1, 2, 3, 4, 5, 6] // Exporta las columnas 0 a 6
+                        }
+                    },
+                    {
+                        extend: 'excelHtml5',
+                        text: '<i class="fas fa-file-excel me-2"></i>Excel',
+                        exportOptions: {
+                            columns: [0, 1, 2, 3, 4, 5, 6]
+                        }
+                    },
+                    {
+                        extend: 'pdfHtml5',
+                        text: '<i class="fas fa-file-pdf me-2"></i>PDF',
+                        exportOptions: {
+                            columns: [0, 1, 2, 3, 4, 5, 6]
+                        }
+                    },
+                    {
+                        extend: 'print',
+                        text: '<i class="fas fa-print me-2"></i>Imprimir',
+                        exportOptions: {
+                            columns: [0, 1, 2, 3, 4, 5, 6]
+                        }
+                    }
+                ]
+            }
+        ]
     });
     table.buttons().container().appendTo('.actions-bar');
+    
     // Referencias a los elementos del DOM
     const editModalEl = document.getElementById('editProjectModal');
     const saveChangesBtn = document.getElementById('saveChangesBtn');
@@ -295,6 +341,65 @@ document.addEventListener('DOMContentLoaded', function () {
             window.location.href = '<?= site_url('dashboard') ?>?anio=' + this.value;
         });
     }
+
+     function renderCustomPagination() {
+        const paginationContainer = $('#customPaginationContainer .pagination');
+        paginationContainer.empty();
+        
+        const info = table.page.info();
+        const totalPages = info.pages;
+        const currentPage = info.page; // 0-indexed
+
+        if (totalPages <= 1) return; // No mostrar paginación si solo hay una página
+
+        // Botón "Anterior"
+        paginationContainer.append(
+            `<li class="page-item ${currentPage === 0 ? 'disabled' : ''}">
+                <a class="page-link" href="#" data-page="previous">‹</a>
+            </li>`
+        );
+
+        // Números de página
+        for (let i = 0; i < totalPages; i++) {
+            paginationContainer.append(
+                `<li class="page-item ${i === currentPage ? 'active' : ''}">
+                    <a class="page-link" href="#" data-page="${i}">${i + 1}</a>
+                </li>`
+            );
+        }
+
+        // Botón "Siguiente"
+        paginationContainer.append(
+            `<li class="page-item ${currentPage === totalPages - 1 ? 'disabled' : ''}">
+                <a class="page-link" href="#" data-page="next">›</a>
+            </li>`
+        );
+    }
+
+    // CAMBIO 6: Conectar los clics de nuestra paginación a la API de DataTables
+    $('#customPaginationContainer').on('click', 'a', function(e) {
+        e.preventDefault();
+        const page = $(this).data('page');
+        
+        if (page === 'previous') {
+            table.page('previous').draw('page');
+        } else if (page === 'next') {
+            table.page('next').draw('page');
+        } else {
+            table.page(parseInt(page)).draw('page');
+        }
+    });
+
+    // Volver a dibujar la paginación cada vez que la tabla se redibuja (ej. después de una búsqueda)
+    table.on('draw', renderCustomPagination);
+
+    // Dibujar la paginación por primera vez
+    renderCustomPagination();
+
+    // Mantenemos el script para el cambio de año
+    $('#periodoSelect').on('change', function() {
+        window.location.href = '<?= site_url('dashboard') ?>?anio=' + this.value;
+    });
 });
 </script>
 </body>

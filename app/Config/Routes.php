@@ -18,7 +18,7 @@ $routes->get('/ajustes', 'Ajustes::index');
 $routes->get('/logout', 'Login::logout');
 $routes->get('/proyectos/nuevo', 'Projects::new'); 
 $routes->post('/proyectos/crear', 'Projects::create');
-$routes->get('/tareas', 'Tareas::index');
+$routes->get('tareas/index/(:num)', 'Tareas::index/$1');
 $routes->post('/tareas/crear', 'Tareas::crear');
 $routes->get('/recursos', 'Recursos::index');
 
@@ -72,5 +72,6 @@ $routes->post('/proyectos/update', 'Proyectos::update');
 $routes->post('tareas/ajax_gestionar_tarea_criterio', 'Tareas::ajax_gestionar_tarea_criterio');
 
 // Y también para las otras rutas AJAX que usas
+$routes->post('tareas/ajax_gestionar_tarea_criterio', 'Tareas::ajax_gestionar_tarea_criterio');
 $routes->post('tareas/ajax_actualizar_criterio', 'Tareas::ajax_actualizar_criterio');
 $routes->post('tareas/ajax_eliminar_criterio', 'Tareas::ajax_eliminar_criterio');

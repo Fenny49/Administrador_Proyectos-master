@@ -1,12 +1,21 @@
 <?php
 
+
 namespace App\Controllers;
 use App\Models\TareaModel;
+use App\Models\UsuarioModel;
+use App\Models\ProyectoModel;
 
 class Tareas extends BaseController
 {
-    public function index()
+    public function index($id_proyecto)
     {
+
+        $usuarioModel = new UsuarioModel();
+        $proyectoModel = new ProyectoModel();
+
+        $listaUsuarios = $usuarioModel->obtenerUsuariosParaDropdown(); 
+
         $session = session();
         if (!$session->get('is_logged_in')) {
             return redirect()->to('/login');
@@ -28,7 +37,9 @@ class Tareas extends BaseController
             'settings'     => $settings,
             'userData'     => $session->get('userData'),
             'nombreProyecto' => 'Actualización ERP 2025',
-            'tasks'        => $tasks
+            'tasks'        => $tasks,
+            'id_proyecto'  => $id_proyecto,
+            'listaUsuarios' => $listaUsuarios
         ];
         
         $show_page  = view('Tareas/tareas_header', $data);
@@ -72,30 +83,37 @@ class Tareas extends BaseController
 
             // Construimos la consulta para ejecutar el SP
             // Usamos DECLARE y SELECT para capturar los parámetros OUTPUT del SP
-            $sql = "DECLARE @out_tar_id INT, @out_crit_id INT;
-                    EXEC dbo.sp_CrearOAgregarCriterioTarea
-                        @TAR_ID_INOUT = ?,
-                        @TAR_NOM = ?,
-                        @TAR_DESC = ?,
-                        @solicitado_por_usuario_id = ?,
-                        @TAR_FECHAINI = ?,
-                        @CRITERIO_DESCRIPCION = ?,
-                        @PUNTOS_ESTIMADOS = ?,
-                        @NUEVA_TAREA_ID = @out_tar_id OUTPUT,
-                        @NUEVO_CRITERIO_ID = @out_crit_id OUTPUT;
-                    SELECT @out_tar_id as TareaID, @out_crit_id as CriterioID;";
+          $sql = "DECLARE @out_tar_id INT, @out_crit_id INT;
+        EXEC dbo.sp_CrearOAgregarCriterioTarea
+            @TAR_ID_INOUT = ?,
+            @PROY_ID = ?,                  -- <-- AÑADIDO
+            @STAT_ID = ?,                  -- <-- AÑADIDO
+            @PRIO_ID = ?,                  -- <-- AÑADIDO
+            @GPO_ID = ?,                   -- <-- AÑADIDO
+            @TAR_NOM = ?,
+            @TAR_DESC = ?,
+            @solicitado_por_usuario_id = ?,
+            @TAR_FECHAINI = ?,
+            @CRITERIO_DESCRIPCION = ?,
+            @PUNTOS_ESTIMADOS = ?,
+            @NUEVA_TAREA_ID = @out_tar_id OUTPUT,
+            @NUEVO_CRITERIO_ID = @out_crit_id OUTPUT;
+        SELECT @out_tar_id as TareaID, @out_crit_id as CriterioID;";
 
-            // Preparamos los parámetros en el orden correcto
-            $params = [
-                $tareaId,
-                $this->request->getPost('tar_nom'),
-                $this->request->getPost('tar_desc'),
-                $this->request->getPost('solicitado_por_usuario_id'),
-                $this->request->getPost('fecha_creacion'),
-                $this->request->getPost('criterio_desc'),
-                $this->request->getPost('criterio_puntos')
-            ];
-
+// Preparamos los parámetros en el orden correcto
+$params = [
+    $tareaId,
+    $this->request->getPost('proy_id'), // <-- AÑADIDO
+    $this->request->getPost('stat_id'), // <-- AÑADIDO
+    $this->request->getPost('prio_id'), // <-- AÑADIDO
+    $this->request->getPost('gpo_id'),  // <-- AÑADIDO
+    $this->request->getPost('tar_nom'),
+    $this->request->getPost('tar_desc'),
+    $this->request->getPost('solicitado_por_usuario_id'),
+    $this->request->getPost('fecha_creacion'),
+    $this->request->getPost('criterio_desc'),
+    $this->request->getPost('criterio_puntos')
+];
             $db = \Config\Database::connect();
             $query = $db->query($sql, $params);
             

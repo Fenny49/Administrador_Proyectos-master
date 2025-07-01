@@ -23,4 +23,15 @@ class UsuarioModel extends Model
         'Rol', 
         'Estado'
     ];
+        
+     public function obtenerUsuariosParaDropdown()
+    {
+        // El constructor de consultas nos permite crear consultas complejas de forma segura.
+        // Usamos asArray() para forzar la salida como array, respetando la configuración del modelo.
+        return $this->select("Id_usuario, CONCAT(Nombre, ' ', Apellido_Paterno, ' ', Apellido_Materno) as NombreCompleto, Rol")
+                    ->where('Estado', 1) // Filtramos solo por usuarios activos (Estado = 1)
+                    ->orderBy('Nombre', 'ASC')
+                    ->asArray() // Aseguramos que el resultado sea un array
+                    ->findAll();
+    }
 }
