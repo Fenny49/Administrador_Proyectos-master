@@ -89,7 +89,7 @@
                 <div class="col-lg-5">
                     <h5>Equipo del Proyecto</h5>
                     <h6>Grupos:</h6>
-                    <ul>
+                    <ul> 
                         <?php if (!empty($grupos_asignados)): ?>
                             <?php foreach($grupos_asignados as $grupo): ?>
                                 <li><?= esc($grupo) ?></li>
