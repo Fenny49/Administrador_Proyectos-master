@@ -2,51 +2,100 @@
 
 namespace App\Controllers;
 
-use App\Models\ProyectoModel; // No olvides importar tu modelo
+use App\Models\UsuarioModel;
+use App\Models\GrupoModel;
+use Config\Database;
 
 class Projects extends BaseController
 {
     /**
      * Muestra el formulario para crear un nuevo proyecto.
+     * Esta función no cambia.
      */
     public function new()
     {
-        // Simplemente cargamos la vista del formulario.
-        // La crearemos en el Paso 4.
-        return view('projects/new');
+       // --- 1. OBTENER DATOS DE SESIÓN Y TEMA (LA PARTE AÑADIDA) ---
+        $session = session();
+        if (!$session->get('is_logged_in')) {
+            return redirect()->to('/login');
+        }
+        
+        // Carga la configuración del tema, usando 'dark' como predeterminado si no existe
+        $defaults = ['default_theme' => 'dark'];
+        $settings = $session->get('general_settings') ?? $defaults;
+
+        $usuarioModel = new UsuarioModel();
+        $grupoModel = new GrupoModel();
+        $anio_trabajo = session()->get('anio_trabajo') ?? date('Y');
+
+        $data = [
+            'settings'      => $settings, 
+            'page_title'    => 'Añadir Nuevo Proyecto',
+            'usuarios'      => $usuarioModel->where('Estado', 1)->findAll(),
+            'grupos'        => $grupoModel->findAll(),
+            'anio_trabajo'  => $anio_trabajo
+        ];
+
+        // Carga el header en una variable
+        $html_output  = view('projects/header', $data);
+        
+        // Carga el contenido del body y lo añade a la variable
+        $html_output .= view('projects/new', $data);
+        
+        // Carga el footer y lo añade al final
+        $html_output .= view('projects/footer', $data);
+        
+        // Devuelve el string HTML completo al navegador
+        return $html_output;
     }
 
     /**
-     * Recibe los datos del formulario y los guarda en la base de datos.
+     * Recibe los datos del formulario y llama al proceso almacenado para crear el proyecto.
      */
     public function create()
     {
-        // 1. Cargar el modelo
-        $proyectoModel = new ProyectoModel();
+        // 1. Recoger los datos del formulario (esto no cambia)
+        $nombre_proyecto = $this->request->getPost('nombre_proyecto');
+        $descripcion = $this->request->getPost('descripcion');
+        $prioridad = $this->request->getPost('prioridad');
+        $responsable_id = $this->request->getPost('responsable_id');
+        $fecha_inicio = $this->request->getPost('fecha_inicio');
+        $fecha_fin = $this->request->getPost('fecha_fin');
+        
+        // 2. Convertir los arrays de IDs en strings separadas por comas
+        $usuariosAsignados = $this->request->getPost('usuarios') ?? [];
+        $gruposAsignados = $this->request->getPost('grupos') ?? [];
+        
+        $usuariosIDsString = implode(',', $usuariosAsignados);
+        $gruposIDsString = implode(',', $gruposAsignados);
 
-        // 2. Recoger los datos del formulario (POST)
-        // Usamos los nombres de los campos del formulario que crearemos
-        $data = [
-            'nombre'             => $this->request->getPost('nombre_proyecto'),
-            'descripcion'        => $this->request->getPost('descripcion'),
-            'prioridad'          => $this->request->getPost('prioridad'), // Asumiendo que tendrás un campo para esto
-            'fecha_inicio'       => $this->request->getPost('fecha_inicio'),
-            'fecha_fin'          => $this->request->getPost('fecha_fin'),
-            'status'             => $this->request->getPost('status'), // Por ejemplo, 'Activo' por defecto
-            'id_usuario_asignado'=> 1, // Simulado por ahora, puedes cambiarlo
-            'anio'               => date('Y', strtotime($this->request->getPost('fecha_inicio'))) // Calcula el año desde la fecha de inicio
-        ];
+        try {
+            // 3. Preparar la llamada al Proceso Almacenado
+            $db = Database::connect();
+            $sql = "EXEC dbo.sp_CrearProyectoCompleto @nombre=?, @descripcion=?, @prioridad=?, @id_usuario_asignado=?, @fecha_inicio=?, @fecha_fin=?, @UsuariosIDs=?, @GruposIDs=?";
 
-        // 3. Insertar los datos en la base de datos
-        if ($proyectoModel->insert($data)) {
-            // 4. Si se guarda con éxito, crea un mensaje de sesión "flash"
-            session()->setFlashdata('success', '¡Proyecto añadido con éxito!');
-        } else {
-            // Manejar el error si es necesario
-            session()->setFlashdata('error', 'No se pudo añadir el proyecto.');
+            // 4. Ejecutar el Proceso Almacenado con los parámetros
+            $db->query($sql, [
+                $nombre_proyecto,
+                $descripcion,
+                $prioridad,
+                $responsable_id,
+                $fecha_inicio,
+                $fecha_fin,
+                $usuariosIDsString,
+                $gruposIDsString
+            ]);
+
+            // Si la ejecución fue exitosa (no hubo excepciones), mostrar mensaje de éxito
+            session()->setFlashdata('success', '¡Proyecto creado con éxito mediante Proceso Almacenado!');
+
+        } catch (\Exception $e) {
+            // Si el proceso almacenado falla y lanza un error, lo capturamos aquí
+            log_message('error', '[ERROR SP] ' . $e->getMessage()); // Opcional: guardar el error en los logs
+            session()->setFlashdata('error', 'No se pudo crear el proyecto. Error de base de datos.');
         }
 
         // 5. Redireccionar al usuario al panel principal
-        return redirect()->to(base_url('/dashboard')); // O la ruta de tu panel
+        return redirect()->to(base_url('/dashboard'));
     }
 }
