@@ -21,7 +21,7 @@ class Tareas extends BaseController
             return redirect()->to('/login');
         }
 
-        $defaults = ['default_theme' => 'light']; 
+        $defaults = ['default_theme' => 'dark']; 
         $settings = $session->get('general_settings') ?? $defaults;
         helper(['url', 'form']);
 

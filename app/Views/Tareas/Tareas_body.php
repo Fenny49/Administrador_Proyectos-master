@@ -23,7 +23,7 @@
             <div>
                 <!-- REQUERIMIENTO 1: MOSTRAR NOMBRE DEL PROYECTO -->
                 <h1 class="h3 mb-0" id="titulo-pagina">Añadir Tarea al Proyecto</h1>
-                <small class="text-muted fs-5 fw-bold text-primary">
+                <small class="text fs-5 fw-bold text-primary">
                     <?= esc($proyecto->nombre ?? 'Proyecto Desconocido') ?>
                 </small>
             </div>
@@ -120,7 +120,7 @@
                                 <!-- Filas de criterios generadas por JS -->
                             </tbody>
                         </table>
-                        <div id="no-criterios-msg" class="text-center text-muted p-4" style="display: none;">
+                        <div id="no-criterios-msg" class="text-center text p-4" style="display: none;">
                             Aún no se han agregado criterios a esta tarea.
                         </div>
                     </div>

@@ -32,7 +32,7 @@
                 <div class="d-flex justify-content-between align-items-center mb-4">
                     <div>
                         <label class="form-label mb-0">Añadir Nuevo Proyecto</label>
-                        <small class="d-block text">Permitir que se añadan nuevos agentes.</small>
+                        <small class="d-block text-muted">Permitir que se añadan nuevos agentes.</small>
                     </div>
                     <div class="form-check form-switch">
                         <input class="form-check-input" type="checkbox" name="allow_new_projects" value="1" <?= ($settings['allow_new_projects'] ?? 0) == '1' ? 'checked' : '' ?>>
@@ -42,7 +42,7 @@
                  <div class="d-flex justify-content-between align-items-center mb-4">
                     <div>
                         <label class="form-label mb-0">Notificaciones</label>
-                        <small class="d-block text">Permitir notificaciones del sistema.</small>
+                        <small class="d-block text-muted">Permitir notificaciones del sistema.</small>
                     </div>
                     <div class="form-check form-switch">
                         <input class="form-check-input" type="checkbox" name="allow_notifications" value="1" <?= ($settings['allow_notifications'] ?? 0) == '1' ? 'checked' : '' ?>>
@@ -54,7 +54,7 @@
                 <div class="d-flex justify-content-between align-items-center mb-4">
                     <div>
                         <label class="form-label mb-0">Avatar de Usuarios</label>
-                        <small class="d-block text">Mostrar avatar de los usuarios.</small>
+                        <small class="d-block text-muted">Mostrar avatar de los usuarios.</small>
                     </div>
                     <div class="form-check form-switch">
                         <input class="form-check-input" type="checkbox" name="show_user_avatar" value="1" <?= ($settings['show_user_avatar'] ?? 0) == '1' ? 'checked' : '' ?>>
@@ -64,7 +64,7 @@
                 <div class="d-flex justify-content-between align-items-center mb-4">
                     <div>
                         <label class="form-label mb-0">Feedback de Usuarios</label>
-                        <small class="d-block text">Permitir a los usuarios dar feedback.</small>
+                        <small class="d-block text-muted">Permitir a los usuarios dar feedback.</small>
                     </div>
                     <div class="form-check form-switch">
                         <input class="form-check-input" type="checkbox" name="feedback_from_users" value="1" <?= ($settings['feedback_from_users'] ?? 0) == '1' ? 'checked' : '' ?>>
