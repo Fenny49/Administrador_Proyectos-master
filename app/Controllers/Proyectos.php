@@ -5,7 +5,7 @@ use CodeIgniter\API\ResponseTrait;
 use App\Models\Proyecto;
 use App\Models\ProyectoModel;
 use Config\Database;
-
+/* Hola richie*/
 class Proyectos extends BaseController
 {
      use ResponseTrait;
