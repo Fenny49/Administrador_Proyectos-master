@@ -78,6 +78,14 @@ $routes->post('gestion/crearGrupo', 'Gestion::crearGrupo');
 // Ruta para ver los detalles de un proyecto específico
 $routes->get('/proyectos/detalles/(:num)', 'Proyectos::detalles/$1');
 
+// Rutas para la sección de Ajustes
+$routes->get('/ajustes/usuarios', 'Ajustes::usuarios');
+$routes->post('/ajustes/crearUsuario', 'Ajustes::crearUsuario');
+$routes->post('/ajustes/crearGrupo', 'Ajustes::crearGrupo');
+
+// --- NUEVAS RUTAS PARA EDITAR Y ELIMINAR ---
+$routes->put('/ajustes/updateUsuario/(:num)', 'Ajustes::updateUsuario/$1');
+$routes->delete('/ajustes/deleteUsuario/(:num)', 'Ajustes::deleteUsuario/$1');
 
 // En app/Config/Routes.php
 $routes->get('/ajustes', 'Ajustes::index');

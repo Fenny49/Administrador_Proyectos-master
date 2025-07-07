@@ -1,6 +1,10 @@
 <?php
 
 namespace App\Controllers;
+use App\Models\UsuarioModel;
+use App\Models\GrupoModel;
+use App\Models\ProyectoModel;
+use App\Models\DetalleGrupoModel;
 
 class Ajustes extends BaseController
 {
@@ -83,36 +87,171 @@ class Ajustes extends BaseController
         if (!$session->get('is_logged_in')) {
             return redirect()->to('/login');
         }
-        helper('url');
 
         $defaults = ['default_theme' => 'dark']; 
         $settings = $session->get('general_settings') ?? $defaults;
+        helper('url');
 
-        $users = [
-            ['id' => 1, 'codigo' => '12456', 'foto' => 'avatar.png', 'nombre' => 'Lizandra Villanueva', 'email' => 'lizandra@mail.com', 'rol' => 'Manager', 'estado' => 'Activo'],
-            ['id' => 2, 'codigo' => '94621', 'foto' => 'avatar.png', 'nombre' => 'Antonio Banderas', 'email' => 'antonio@mail.com', 'rol' => 'Administrador', 'estado' => 'Activo'],
-        ];
-        $groups = [
-            ['id' => 1, 'codigo' => 'GRP-001', 'nombre' => 'Equipo de Desarrollo', 'miembros' => 5, 'lider' => 'Lizandra Villanueva', 'tipo' => 'Desarrollo'],
-        ];
+        $usuarioModel = new UsuarioModel();
+        $grupoModel = new GrupoModel();
+        $proyectoModel = new ProyectoModel();
+        $detalleGrupoModel = new DetalleGrupoModel();
+
+        $projectId = $this->request->getGet('proyecto_id');
+        
+        $usuarios_a_mostrar = [];
+        $grupos_a_mostrar = [];
+        $proyecto_filtrado = null;
+
+        if ($projectId && is_numeric($projectId) && $projectId > 0) {
+            $usuarios_a_mostrar = $detalleGrupoModel->getUsuariosPorProyecto($projectId);
+            $grupos_a_mostrar = $detalleGrupoModel->getGruposPorProyecto($projectId);
+            $proyecto_filtrado = $proyectoModel->find($projectId);
+        } else {
+            $usuarios_a_mostrar = $usuarioModel->findAll();
+            $grupos_a_mostrar = $grupoModel->findAll();
+        }
 
         $data = [
-            'settings'  => $settings,
-            'userData'  => $session->get('userData'),
-            'resources' => ['users'  => $users, 'groups' => $groups],
+            'settings'            => $settings,
+            'userData'            => $session->get('userData'),
+            'resources'           => [
+                'users'  => $usuarios_a_mostrar,
+                'groups' => $grupos_a_mostrar
+            ],
             'filters' => [
-                'user_types'  => array_values(array_unique(array_column($users, 'rol'))),
-                'group_types' => array_values(array_unique(array_column($groups, 'tipo'))),
-                'estados'     => array_values(array_unique(array_column($users, 'estado'))),
-            ]
+                'user_types' => array_values(array_unique(array_column($usuarioModel->findAll(), 'Rol'))),
+                'estados'    => array_values(array_unique(array_column($usuarioModel->findAll(), 'Estado'))),
+            ],
+            'proyectos'           => $proyectoModel->findAll(),
+            'proyecto_filtrado'   => $proyecto_filtrado,
+            'selected_project_id' => $projectId
         ];
         
-        $show_page  = view('Ajustes/ajustes_header', $data);
+        $show_page  = view('Ajustes/usuarios_header', $data);
         $show_page .= view('ajustes/usuarios', $data);
-        $show_page .= view('Ajustes/ajustes_footer', $data);
+        $show_page .= view('Ajustes/usuarios_footer', $data);
         return $show_page;
     }
 
+    /**
+     * Procesa la creación de un nuevo usuario desde el formulario modal.
+     */
+    public function crearUsuario()
+    {
+        $validation = \Config\Services::validation();
+        $validation->setRules([
+            'Nombre'           => 'required|alpha_space',
+            'Apellido_Paterno' => 'required|alpha_space',
+            'Apellido_Materno' => 'required|alpha_space',
+            'Codigo_User'      => 'required|numeric',
+            'Correo'           => 'required|valid_email|is_unique[usuario.Correo]',
+            'Password'         => 'required|min_length[8]'
+        ]);
+
+        if (!$validation->withRequest($this->request)->run()) {
+            return redirect()->back()->withInput()->with('errors', $validation->getErrors());
+        }
+
+        $usuarioModel = new UsuarioModel();
+        $data = [
+            'Nombre'           => $this->request->getPost('Nombre'),
+            'Apellido_Paterno' => $this->request->getPost('Apellido_Paterno'),
+            'Apellido_Materno' => $this->request->getPost('Apellido_Materno'),
+            'Codigo_User'      => $this->request->getPost('Codigo_User'),
+            'Correo'           => $this->request->getPost('Correo'),
+            'Password'         => password_hash($this->request->getPost('Password'), PASSWORD_DEFAULT),
+            'Rol'              => $this->request->getPost('Rol'),
+            'Estado'           => $this->request->getPost('Estado')
+        ];
+        $usuarioModel->insert($data);
+
+        return redirect()->to('/ajustes/usuarios')->with('success', 'Usuario creado con éxito.');
+    }
+
+    /**
+     * Procesa la creación de un nuevo grupo desde el formulario modal.
+     */
+    public function crearGrupo()
+    {
+        $validation = \Config\Services::validation();
+        $validation->setRules(['GPO_NOM' => 'required']);
+
+        if (!$validation->withRequest($this->request)->run()) {
+            return redirect()->back()->withInput()->with('errors_grupo', $validation->getErrors());
+        }
+
+        $grupoModel = new GrupoModel();
+        $data = [
+            'GPO_NOM'  => $this->request->getPost('GPO_NOM'),
+            'GPO_DESC' => $this->request->getPost('GPO_DESC')
+        ];
+        $grupoModel->insert($data);
+
+        return redirect()->to('/ajustes/usuarios')->with('success', 'Grupo creado con éxito.');
+    }
+
+    public function updateUsuario($id)
+    {
+        $usuarioModel = new UsuarioModel();
+        $data = [
+            'Nombre'           => $this->request->getPost('Nombre'),
+            'Apellido_Paterno' => $this->request->getPost('Apellido_Paterno'),
+            'Apellido_Materno' => $this->request->getPost('Apellido_Materno'),
+            'Codigo_User'      => $this->request->getPost('Codigo_User'),
+            'Correo'           => $this->request->getPost('Correo'),
+            'Rol'              => $this->request->getPost('Rol'),
+            'Estado'           => $this->request->getPost('Estado'),
+        ];
+
+        $password = $this->request->getPost('Password');
+        if (!empty($password)) {
+            $data['Password'] = password_hash($password, PASSWORD_DEFAULT);
+        }
+
+        $usuarioModel->update($id, $data);
+        return redirect()->to('/ajustes/usuarios')->with('success', 'Usuario actualizado con éxito.');
+    }
+
+    /**
+     * Procesa la eliminación de un usuario.
+     */
+    public function deleteUsuario($id)
+    {
+        $usuarioModel = new UsuarioModel();
+        $detalleGrupoModel = new DetalleGrupoModel();
+        $detalleGrupoModel->where('USU_ID', $id)->delete();
+        
+        $usuarioModel->delete($id);
+        return redirect()->to('/ajustes/usuarios')->with('success', 'Usuario eliminado con éxito.');
+    }
+
+    /**
+     * Procesa la actualización de un grupo existente.
+     */
+    public function updateGrupo($id)
+    {
+        $grupoModel = new GrupoModel();
+        $data = [
+            'GPO_NOM'  => $this->request->getPost('GPO_NOM'),
+            'GPO_DESC' => $this->request->getPost('GPO_DESC'),
+        ];
+        $grupoModel->update($id, $data);
+        return redirect()->to('/ajustes/usuarios')->with('success', 'Grupo actualizado con éxito.');
+    }
+
+    /**
+     * Procesa la eliminación de un grupo.
+     */
+    public function deleteGrupo($id)
+    {
+        $grupoModel = new GrupoModel();
+        $detalleGrupoModel = new DetalleGrupoModel();
+        $detalleGrupoModel->where('GPO_ID', $id)->delete();
+
+        $grupoModel->delete($id);
+        return redirect()->to('/ajustes/usuarios')->with('success', 'Grupo eliminado con éxito.');
+    }
     /**
      * Muestra la página de gestión de Master Data.
      */
