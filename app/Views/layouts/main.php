@@ -63,7 +63,7 @@
     </style>
 </head>
 
-<body class="<?= ($settings['default_theme'] ?? 'light') === 'dark' ? 'theme-dark' : 'theme-light' ?>">
+<body class="<?= ($settings['default_theme'] ?? 'dark') === 'dark' ? 'theme-dark' : 'theme-light' ?>">
 
 <div class="main-container">
     <aside class="sidebar d-none d-lg-block">

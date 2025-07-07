@@ -15,8 +15,7 @@
                 <a href="<?= site_url('dashboard') ?>" class="btn btn-secondary"><i class="fas fa-arrow-left"></i> Volver al Dashboard</a>
             </div>
             <h4 class="text-center py-3 m-0">Detalles del Proyecto</h4>
-            <div>
-                </div>
+            <div></div>
         </div>
 
         <div class="main-panel">
@@ -29,7 +28,7 @@
                 <div class="col-md-3">
                     <div class="stat-card">
                         <h6>Estado</h6>
-                        <p class="fs-4 fw-bold text-success"><?= esc($proyecto['estado']) ?></p>
+                        <p class="fs-4 fw-bold text-success"><?= esc($proyecto['status']) ?></p>
                     </div>
                 </div>
                 <div class="col-md-3">
@@ -42,13 +41,13 @@
                 <div class="col-md-3">
                     <div class="stat-card">
                         <h6>Usuarios Asignados</h6>
-                        <p class="fs-4 fw-bold"><?= count($usuarios_asignados) ?></p>
+                        <p class="fs-4 fw-bold"><?= esc($total_usuarios) ?></p>
                     </div>
                 </div>
                 <div class="col-md-3">
                     <div class="stat-card">
                         <h6>Grupos Involucrados</h6>
-                        <p class="fs-4 fw-bold"><?= count($grupos_asignados) ?></p>
+                        <p class="fs-4 fw-bold"><?= esc($total_grupos) ?></p>
                     </div>
                 </div>
             </div>
@@ -59,30 +58,16 @@
                     <ul class="list-group">
                         <?php if (!empty($tareas)): ?>
                             <?php 
-                                // Mapeo de estados a colores de Bootstrap para los badges
-                                $statusColors = [
-                                    'En Progreso' => 'bg-primary',
-                                    'Completado'  => 'bg-success',
-                                    'Pendiente'   => 'bg-warning text-dark',
-                                    'Atrasado'    => 'bg-danger',
-                                    'En Espera'   => 'bg-info',
-                                    'Cancelado'   => 'bg-secondary',
-                                ];
-                            ?>
-                            <?php foreach($tareas as $tarea): ?>
-                                <?php 
-                                    // Obtener el color del estado actual, o un color por defecto si no se encuentra
+                                $statusColors = ['En Progreso' => 'bg-primary', 'Completado'  => 'bg-success', 'Pendiente'   => 'bg-warning text-dark', 'Atrasado'    => 'bg-danger', 'En Espera'   => 'bg-info', 'Cancelado'   => 'bg-secondary'];
+                                foreach($tareas as $tarea): 
                                     $badgeClass = $statusColors[$tarea['STAT_NOM']] ?? 'bg-light text-dark';
                                 ?>
                                 <li class="list-group-item d-flex justify-content-between align-items-center">
                                     <?= esc($tarea['TAR_NOM']) ?>
                                     <span class="badge <?= $badgeClass ?>"><?= esc($tarea['STAT_NOM']) ?></span>
                                 </li>
-                            <?php endforeach; ?>
-                        <?php else: ?>
-                            <li class="list-group-item text-center text-muted">
-                                No hay tareas registradas para este proyecto.
-                            </li>
+                            <?php endforeach; else: ?>
+                            <li class="list-group-item text-center text-muted">No hay tareas registradas.</li>
                         <?php endif; ?>
                     </ul>
                 </div>
@@ -90,23 +75,11 @@
                     <h5>Equipo del Proyecto</h5>
                     <h6>Grupos:</h6>
                     <ul>
-                        <?php if (!empty($grupos_asignados)): ?>
-                            <?php foreach($grupos_asignados as $grupo): ?>
-                                <li><?= esc($grupo) ?></li>
-                            <?php endforeach; ?>
-                        <?php else: ?>
-                            <li class="text">No hay grupos asignados.</li>
-                        <?php endif; ?>
+                        <?= $html_lista_grupos ?>
                     </ul>
                     <h6 class="mt-3">Usuarios:</h6>
                     <ul>
-                        <?php if (!empty($usuarios_asignados)): ?>
-                            <?php foreach($usuarios_asignados as $usuario): ?>
-                                <li><?= esc($usuario) ?></li>
-                            <?php endforeach; ?>
-                        <?php else: ?>
-                            <li class="text">No hay usuarios asignados.</li>
-                        <?php endif; ?>
+                        <?= $html_lista_usuarios ?>
                     </ul>
                 </div>
             </div>

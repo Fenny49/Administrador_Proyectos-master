@@ -1,4 +1,4 @@
-<body class="<?= ($settings['default_theme'] ?? 'light') === 'dark' ? 'theme-dark' : 'theme-light' ?>">
+<body class="<?= ($settings['default_theme'] ?? 'dark') === 'dark' ? 'theme-dark' : 'theme-ligth' ?>">
     
 <!-- Sidebar para pantallas grandes (visible en lg y superior) -->
 <div class="main-container">

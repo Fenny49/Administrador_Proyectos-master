@@ -69,7 +69,8 @@
                                 <td class="table-actions">
                                     <a href="<?= site_url('proyectos/detalles/' . $project['id_proyecto']) ?>" title="Ver Detalles"><i class="fas fa-list-alt"></i></a>
                                    <a href="<?= site_url('tareas/index/' . $project['id_proyecto']) ?>" title="Añadir Tareas"><i class="fas fa-plus-circle"></i></a>
-                                    <a href="<?= site_url('proyectos/' . $project['id_proyecto'] . '/gestion') ?>" title="Gestionar Usuarios"><i class="fas fa-user-plus"></i></a>
+                                    <a href="<?= site_url('gestion?proyecto_id=' . $project['id_proyecto']) ?>" title="Gestionar Equipo del Proyecto"><i class="fas fa-user-plus"></i></a>
+                                    <a href="<?= site_url('tareas/listar/' . $project['id_proyecto']) ?>" title="Ver y Editar Tareas"><i class="fas fa-tasks"></i></a>
                                     
                                     <?php if ($userData['rol'] === 'administrador'): ?>
                                         <a href="#" class="ms-1" title="Editar Proyecto" 

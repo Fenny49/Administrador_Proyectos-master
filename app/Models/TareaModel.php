@@ -36,7 +36,7 @@ class TareaModel extends Model
      * 'object' es generalmente más limpio para trabajar en las vistas.
      * @var string
      */
-    protected $returnType = 'object';
+    protected $returnType = 'array';
 
     /**
      * Si es true, las operaciones de inserción y actualización usarán automáticamente
@@ -47,11 +47,7 @@ class TareaModel extends Model
      */
     protected $useTimestamps = false;
     
-    // Si decides usar timestamps, puedes personalizar los nombres de las columnas:
-    // protected $createdField  = 'fecha_creacion';
-    // protected $updatedField  = 'fecha_modificacion';
-    // protected $dateFormat    = 'datetime'; // o 'int', 'date'
-
+   
     /**
      * Especifica qué campos de la tabla se pueden establecer masivamente
      * durante una operación de inserción o actualización (ej: a través de un formulario).
@@ -150,5 +146,46 @@ class TareaModel extends Model
 
         // Ejecutamos la consulta y devolvemos los resultados
         return $builder->get()->getResult();
+    }
+
+      /**
+     * Obtiene las tareas de un proyecto con campos calculados para el estado y los días restantes.
+     * @param int $id_proyecto
+     * @return array
+     */
+    
+    public function obtenerTareasConCalculos($id_proyecto)
+    {
+        return $this->db->table($this->table . ' t')
+            ->select("
+                t.TAR_ID,
+                t.TAR_NOM,
+                t.TAR_FECHAFIN,
+                t.STAT_ID as original_stat_id,
+                
+                -- REQUERIMIENTO: Calcular días restantes
+                CASE 
+                    WHEN t.TAR_FECHAFIN IS NULL THEN NULL
+                    ELSE DATEDIFF(day, GETDATE(), t.TAR_FECHAFIN) 
+                END AS dias_restantes,
+                
+                -- REQUERIMIENTO: Calcular el nombre del estado dinámicamente
+                CASE 
+                    WHEN t.STAT_ID IN (3, 5) THEN e.STAT_NOM -- Si es 'Completado' o 'Cancelado', no se cambia
+                    WHEN t.TAR_FECHAFIN < CAST(GETDATE() AS DATE) THEN 'Atrasado'
+                    ELSE e.STAT_NOM 
+                END AS estado_calculado,
+
+                -- REQUERIMIENTO: Calcular el ID del estado dinámicamente
+                CASE 
+                    WHEN t.STAT_ID IN (3, 5) THEN t.STAT_ID
+                    WHEN t.TAR_FECHAFIN < CAST(GETDATE() AS DATE) THEN 6 -- ID de 'Atrasado'
+                    ELSE t.STAT_ID 
+                END AS stat_id_calculado
+            ")
+            ->join('dbo.ESTATUS e', 't.STAT_ID = e.STAT_ID', 'left')
+            ->where('t.PROY_ID', $id_proyecto)
+            ->get()
+            ->getResultArray();
     }
 }

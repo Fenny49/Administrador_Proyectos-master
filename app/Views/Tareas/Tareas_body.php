@@ -24,7 +24,7 @@
                 <!-- REQUERIMIENTO 1: MOSTRAR NOMBRE DEL PROYECTO -->
                 <h1 class="h3 mb-0" id="titulo-pagina">Añadir Tarea al Proyecto</h1>
                 <small class="text fs-5 fw-bold text-primary">
-                    <?= esc($proyecto->nombre ?? 'Proyecto Desconocido') ?>
+                    <?= esc($proyecto['nombre'] ?? 'Proyecto Desconocido') ?>
                 </small>
             </div>
             <span id="estado-guardado" class="text-success fw-bold"></span>
@@ -56,13 +56,13 @@
                             </div>
                             <div class="mb-3">
                                 <label for="tar_desc" class="form-label">Descripción Detallada</label>
-                                <textarea class="form-control" name="tar_desc" id="tar_desc" rows="5" placeholder="Describe los criterios de aceptación y detalles funcionales."></textarea>
+                                <textarea class="form-control" name="tar_desc" id="tar_desc" rows="5" placeholder="Describe los criterios de aceptación y detalles funcionales." required></textarea>
                             </div>
                             
                             <div class="row">
                                 <div class="col-md-6 mb-3">
                                     <label for="solicitado_por_usuario_id" class="form-label">Solicitado por</label>
-                                    <select class="form-select" name="solicitado_por_usuario_id" id="solicitado_por_usuario_id" required>
+                                    <select class="form-select" name="solicitado_por_usuario_id" id="solicitado_por_usuario_id"required >
                                         <option value="" selected disabled>-- Seleccione un usuario --</option>
                                             <?php if (!empty($listaUsuarios)): ?>
                                             <?php foreach ($listaUsuarios as $usuario): ?>
@@ -75,8 +75,9 @@
                                     </select>
                                 </div>
                                  <div class="col-md-6 mb-3">
-                                    <label for="fecha_creacion" class="form-label">Fecha de Registro</label>
-                                    <input type="date" class="form-control" name="fecha_creacion" id="fecha_creacion" value="<?= date('Y-m-d') ?>">
+                                    <label for="tar_fechafin" class="form-label">Fecha de Finalización (Opcional)</label>
+                                    <input type="date" class="form-control" name="tar_fechafin" id="tar_fechafin" 
+                                           value="<?= esc($tarea['TAR_FECHAFIN'] ?? '') ?>">
                                 </div>
                             </div>
                         </div>
@@ -92,7 +93,12 @@
                             </div>
                             <div class="mb-3">
                                 <label for="criterio_puntos" class="form-label">Puntos de Esfuerzo</label>
-                                <input type="number" class="form-control" id="criterio_puntos" step="1" min="0" required placeholder="Ej: 3">
+                                <select class="form-select" id="criterio_puntos">
+                                    <option value="" selected disabled>-- Seleccionar puntos --</option>
+                                    <?php foreach ($puntosScrum as $puntos): ?>
+                                        <option value="<?= $puntos ?>"><?= $puntos ?></option>
+                                    <?php endforeach; ?>
+                                </select>
                             </div>
                             <div class="d-grid mt-4">
                                 <button type="button" id="btn-agregar-criterio" class="btn btn-info text-white btn-lg">
@@ -120,7 +126,7 @@
                                 <!-- Filas de criterios generadas por JS -->
                             </tbody>
                         </table>
-                        <div id="no-criterios-msg" class="text-center text p-4" style="display: none;">
+                        <div id="no-criterios-msg" class="text-center text-muted p-4" style="display: none;">
                             Aún no se han agregado criterios a esta tarea.
                         </div>
                     </div>

@@ -2,15 +2,13 @@
 
 namespace App\Controllers;
 
-// Importamos los modelos
 use App\Models\UsuarioModel;
 use App\Models\GrupoModel;
+use App\Models\ProyectoModel;
+use App\Models\DetalleGrupoModel;
 
 class Gestion extends BaseController
 {
-    /**
-     * Muestra la página principal de gestión con las tablas de usuarios y grupos.
-     */
     public function index()
     {
         $session = session();
@@ -18,56 +16,66 @@ class Gestion extends BaseController
             return redirect()->to('/login');
         }
 
-        // --- INICIO DE LA MODIFICACIÓN ---
-
-        // 1. Añadimos la carga de la configuración del tema y datos de sesión
         $defaults = ['default_theme' => 'dark']; 
         $settings = $session->get('general_settings') ?? $defaults;
         
         $usuarioModel = new UsuarioModel();
         $grupoModel = new GrupoModel();
+        $proyectoModel = new ProyectoModel();
+        $detalleGrupoModel = new DetalleGrupoModel();
 
-        // 2. Unificamos TODOS los datos que las vistas necesitan
+        $projectId = $this->request->getGet('proyecto_id');
+        
+        $usuarios = [];
+        $grupos = [];
+        $proyecto_filtrado = null;
+
+        if ($projectId && is_numeric($projectId)) {
+            // Ahora estas llamadas al modelo funcionarán correctamente
+            $usuarios = $detalleGrupoModel->getUsuariosPorProyecto($projectId);
+            $grupos = $detalleGrupoModel->getGruposPorProyecto($projectId);
+            $proyecto_filtrado = $proyectoModel->find($projectId);
+        } else {
+            $usuarios = $usuarioModel->findAll();
+            $grupos = $grupoModel->findAll();
+        }
+
         $data = [
-            'settings' => $settings,
-            'userData' => $session->get('userData'),
-            'usuarios' => $usuarioModel->findAll(),
-            'grupos'   => $grupoModel->findAll(),
+            'settings'            => $settings,
+            'userData'            => $session->get('userData'),
+            'usuarios'            => $usuarios,
+            'grupos'              => $grupos,
+            'proyectos'           => $proyectoModel->findAll(),
+            'proyecto_filtrado'   => $proyecto_filtrado,
+            'selected_project_id' => $projectId
         ];
         
-        helper('url');
-        
-        // 3. Reemplazamos "return view()" por tu sistema de 3 archivos
         $show_page  = view('gestion/gestion_header', $data);
         $show_page .= view('gestion/gestion_body', $data);
         $show_page .= view('gestion/gestion_footer', $data);
         
         return $show_page;
-
-        // --- FIN DE LA MODIFICACIÓN ---
     }
-
     /**
      * Procesa la creación de un nuevo usuario. (SIN CAMBIOS)
      */
     public function crearUsuario()
     {
-        // ===== INICIO DE LA VALIDACIÓN =====
         $validation =  \Config\Services::validation();
         $validation->setRules([
             'Nombre'           => 'required|alpha_space',
             'Apellido_Paterno' => 'required|alpha_space',
             'Apellido_Materno' => 'required|alpha_space',
             'Codigo_User'      => 'required|numeric',
-            'Correo'           => 'required|valid_email|is_unique[tbl_usuarios.Correo]',
+            // CORRECCIÓN: Apunta a la tabla correcta 'usuario'
+            'Correo'           => 'required|valid_email|is_unique[usuario.Correo]',
             'Password'         => 'required|min_length[8]'
         ]);
 
         if (!$validation->withRequest($this->request)->run()) {
-            // Si la validación falla, regresamos al formulario con los errores
+            // Si la validación falla, regresamos con los errores
             return redirect()->back()->withInput()->with('errors', $validation->getErrors());
         }
-        // ===== FIN DE LA VALIDACIÓN =====
 
         $usuarioModel = new UsuarioModel();
 
@@ -89,21 +97,19 @@ class Gestion extends BaseController
 
 
     /**
-     * Procesa la creación de un nuevo grupo. (SIN CAMBIOS)
+     * Procesa la creación de un nuevo grupo desde el formulario modal.
      */
     public function crearGrupo()
     {
-        // ===== INICIO DE LA VALIDACIÓN =====
         $validation =  \Config\Services::validation();
         $validation->setRules([
             'GPO_NOM' => 'required'
         ]);
 
         if (!$validation->withRequest($this->request)->run()) {
-            // Si la validación falla, regresamos al formulario
+            // Si la validación falla, regresamos con los errores
             return redirect()->back()->withInput()->with('errors_grupo', $validation->getErrors());
         }
-        // ===== FIN DE LA VALIDACIÓN =====
 
         $grupoModel = new GrupoModel();
 
