@@ -1,7 +1,10 @@
 <?php
 
 namespace App\Controllers;
-
+use App\Models\UsuarioModel;
+use App\Models\GrupoModel;
+use App\Models\ProyectoModel;
+use App\Models\DetalleGrupoModel;
 class Ajustes extends BaseController
 {
     /**
@@ -14,12 +17,21 @@ class Ajustes extends BaseController
             return redirect()->to('/login');
         }
 
+        // --- INICIO DEL CAMBIO ---
+        // Construimos el array 'userData' manualmente desde la sesión.
+        $userData = [
+            'rol' => strtolower($session->get('rol') ?? ''),
+            'nombre_completo' => $session->get('nombre_completo')
+            // Puedes añadir más datos si los necesitas, ej: 'id_usuario' => $session->get('id_usuario')
+        ];
+        // --- FIN DEL CAMBIO ---
+
         // Carga la configuración del tema para pasársela a la vista
         $defaults = ['default_theme' => 'dark']; 
         $settings = $session->get('general_settings') ?? $defaults;
         
         $data = [
-            'userData' => $session->get('userData'),
+            'userData' => $userData, // Usamos el array que acabamos de crear
             'settings' => $settings
         ];
         helper('url');
@@ -41,13 +53,21 @@ class Ajustes extends BaseController
         }
         helper('form');
 
+        // --- INICIO DEL CAMBIO ---
+        // Construimos el array 'userData' manualmente.
+        $userData = [
+            'rol' => strtolower($session->get('rol') ?? ''),
+            'nombre_completo' => $session->get('nombre_completo')
+        ];
+        // --- FIN DEL CAMBIO ---
+
         $defaults = [
             'allow_new_projects'    => '1', 'show_user_avatar'      => '1',
             'allow_notifications'   => '1', 'feedback_from_users'   => '1',
             'active_users'          => 'all', 'default_theme'         => 'dark',
         ];
         $data['settings'] = $session->get('general_settings') ?? $defaults;
-        $data['userData'] = $session->get('userData');
+        $data['userData'] = $userData; // Usamos el array que acabamos de crear
 
         $show_page  = view('Ajustes/ajustes_header', $data);
         $show_page .= view('ajustes/generales', $data);
@@ -57,6 +77,7 @@ class Ajustes extends BaseController
 
     /**
      * Guarda las configuraciones generales en la sesión.
+     * (Este método no necesita cambios)
      */
     public function guardarGenerales()
     {
@@ -77,40 +98,135 @@ class Ajustes extends BaseController
     /**
      * Muestra la página de gestión de Usuarios y Grupos.
      */
-    public function usuarios()
+   public function usuarios()
     {
         $session = session();
         if (!$session->get('is_logged_in')) {
             return redirect()->to('/login');
         }
-        helper('url');
 
         $defaults = ['default_theme' => 'dark']; 
         $settings = $session->get('general_settings') ?? $defaults;
+        helper('url');
 
-        $users = [
-            ['id' => 1, 'codigo' => '12456', 'foto' => 'avatar.png', 'nombre' => 'Lizandra Villanueva', 'email' => 'lizandra@mail.com', 'rol' => 'Manager', 'estado' => 'Activo'],
-            ['id' => 2, 'codigo' => '94621', 'foto' => 'avatar.png', 'nombre' => 'Antonio Banderas', 'email' => 'antonio@mail.com', 'rol' => 'Administrador', 'estado' => 'Activo'],
-        ];
-        $groups = [
-            ['id' => 1, 'codigo' => 'GRP-001', 'nombre' => 'Equipo de Desarrollo', 'miembros' => 5, 'lider' => 'Lizandra Villanueva', 'tipo' => 'Desarrollo'],
-        ];
+        $usuarioModel = new UsuarioModel();
+        $grupoModel = new GrupoModel();
+        $proyectoModel = new ProyectoModel();
+        $detalleGrupoModel = new DetalleGrupoModel();
+
+        $projectId = $this->request->getGet('proyecto_id');
+        
+        $usuarios_a_mostrar = [];
+        $grupos_a_mostrar = [];
+        $proyecto_filtrado = null;
+
+        if ($projectId && is_numeric($projectId) && $projectId > 0) {
+            $usuarios_a_mostrar = $detalleGrupoModel->getUsuariosPorProyecto($projectId);
+            $grupos_a_mostrar = $detalleGrupoModel->getGruposPorProyecto($projectId);
+            $proyecto_filtrado = $proyectoModel->find($projectId);
+        } else {
+            $usuarios_a_mostrar = $usuarioModel->findAll();
+            $grupos_a_mostrar = $grupoModel->findAll();
+        }
 
         $data = [
-            'settings'  => $settings,
-            'userData'  => $session->get('userData'),
-            'resources' => ['users'  => $users, 'groups' => $groups],
+            'settings'            => $settings,
+            'userData'            => $session->get('userData'),
+            'resources'           => [
+                'users'  => $usuarios_a_mostrar,
+                'groups' => $grupos_a_mostrar
+            ],
             'filters' => [
-                'user_types'  => array_values(array_unique(array_column($users, 'rol'))),
-                'group_types' => array_values(array_unique(array_column($groups, 'tipo'))),
-                'estados'     => array_values(array_unique(array_column($users, 'estado'))),
-            ]
+                'user_types' => array_values(array_unique(array_column($usuarioModel->findAll(), 'Rol'))),
+                'estados'    => array_values(array_unique(array_column($usuarioModel->findAll(), 'Estado'))),
+            ],
+            'proyectos'           => $proyectoModel->findAll(),
+            'proyecto_filtrado'   => $proyecto_filtrado,
+            'selected_project_id' => $projectId
         ];
         
-        $show_page  = view('Ajustes/ajustes_header', $data);
+        $show_page  = view('Ajustes/usuarios_header', $data);
         $show_page .= view('ajustes/usuarios', $data);
-        $show_page .= view('Ajustes/ajustes_footer', $data);
+        $show_page .= view('Ajustes/usuarios_footer', $data);
         return $show_page;
+    }
+
+    /**
+     * Procesa la creación de un nuevo usuario desde el formulario modal.
+     */
+    public function crearUsuario()
+    {
+        // --- INICIO DE LA MODIFICACIÓN ---
+
+        // 1. Definimos las reglas de validación de una forma más clara
+        $rules = [
+        'Nombre'  => 'required|alpha_space',
+        'Apellido_Paterno' => 'required|alpha_space',
+        'Apellido_Materno' => 'required|alpha_space',
+        'Password' => 'required|min_length[8]',
+                    'Correo' => [
+                        'rules' => 'required|valid_email|is_unique[usuario.Correo]',
+                        'errors' => [
+                            'required' => 'El correo electrónico es obligatorio.',
+                            'valid_email' => 'Por favor, introduce un correo electrónico válido.',
+                            'is_unique' => 'Este correo electrónico ya está registrado. Por favor, utiliza otro.'
+                        ]
+                    ],
+        'Codigo_User' => [
+                        'rules' => 'required|numeric|is_unique[usuario.Codigo_User]',
+                        'errors' => [
+                            'required' => 'El código de usuario es obligatorio.',
+                            'numeric' => 'El código de usuario solo debe contener números.',
+                            'is_unique' => 'Este código de usuario ya existe. Por favor, elige otro.'
+                        ]
+                    ]
+        ];
+
+                // 2. Ejecutamos la validación con el método recomendado
+        if (!$this->validate($rules)) {
+                    // Si la validación falla, regresamos al formulario con los errores.
+        return redirect()->back()->withInput()->with('errors', $this->validator->getErrors());
+        }
+
+                // 3. Si la validación es exitosa, procedemos a guardar.
+        $usuarioModel = new UsuarioModel();
+        $data = [
+        'Nombre'=> $this->request->getPost('Nombre'),
+        'Apellido_Paterno' => $this->request->getPost('Apellido_Paterno'),
+        'Apellido_Materno' => $this->request->getPost('Apellido_Materno'),
+        'Codigo_User'=> $this->request->getPost('Codigo_User'),
+        'Correo' => $this->request->getPost('Correo'),
+        'Password'=> password_hash($this->request->getPost('Password'), PASSWORD_DEFAULT),
+        'Rol'=> $this->request->getPost('Rol'),
+        'Estado'=> $this->request->getPost('Estado')
+        ];
+        $usuarioModel->insert($data);
+
+        return redirect()->to('/ajustes/usuarios')->with('success', 'Usuario creado con éxito.');
+
+                // --- FIN DE LA MODIFICACIÓN ---
+        }
+
+    /**
+     * Procesa la creación de un nuevo grupo desde el formulario modal.
+     */
+    public function crearGrupo()
+    {
+        $validation = \Config\Services::validation();
+        $validation->setRules(['GPO_NOM' => 'required']);
+
+        if (!$validation->withRequest($this->request)->run()) {
+            return redirect()->back()->withInput()->with('errors_grupo', $validation->getErrors());
+        }
+
+        $grupoModel = new GrupoModel();
+        $data = [
+            'GPO_NOM'  => $this->request->getPost('GPO_NOM'),
+            'GPO_DESC' => $this->request->getPost('GPO_DESC')
+        ];
+        $grupoModel->insert($data);
+
+        return redirect()->to('/ajustes/usuarios')->with('success', 'Grupo creado con éxito.');
     }
 
     /**

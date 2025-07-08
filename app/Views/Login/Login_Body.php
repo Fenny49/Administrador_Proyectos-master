@@ -4,7 +4,7 @@
         <div class="col-11 col-sm-8 col-md-6 col-lg-4">
             
             <div class="text-center mb-4">
-                <img src="<?= base_url('assets/images/bluelogo.png') ?>" alt="Icono Login" style="width: 100px;">
+                <img src="assets/images/bluelogo.png" alt="Icono Login" style="width: 100px;">
             </div>
 
             <!-- Mensajes de Error / Éxito -->
@@ -42,7 +42,7 @@
                 <div class="mb-4">
                     <label for="captcha" class="form-label">Escribe el texto de la imagen</label>
                     <div class="input-group">
-                        <img src="<?= site_url('login/captcha') ?>" alt="Captcha Image" class="rounded-start" style="border: 1px solid #fff; border-right: 0;">
+                        <img src="login/captcha" alt="Captcha Image" class="rounded-start" style="border: 1px solid #fff; border-right: 0;">
                         <a href="javascript:void(0);" onclick="this.previousElementSibling.src='<?= site_url('login/captcha') ?>?' + new Date().getTime()" class="input-group-text captcha-refresh-icon">
                             <i class="fas fa-sync-alt"></i>
                         </a>

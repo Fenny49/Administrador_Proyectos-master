@@ -11,7 +11,7 @@ class Usuario extends Model
     'Apellido_Materno', 'Codigo_User', 
     'Correo', 'Password', 'rol'];
 
-    // ... (el método de login se queda igual) ...
+    
     public function verificar_login($correo, $password)
     {
         return $this->where('Correo', $correo)

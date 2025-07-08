@@ -1,15 +1,12 @@
-<body class="<?= ($settings['default_theme'] ?? 'light') === 'dark' ? 'theme-dark' : 'theme-light' ?>">
+<body class="<?= ($settings['default_theme'] ?? 'dark') === 'dark' ? 'theme-dark' : 'theme-ligth' ?>">
     
 <!-- Sidebar para pantallas grandes (visible en lg y superior) -->
 <div class="main-container">
     <div class="sidebar d-none d-lg-block">
-        <h5 class="text-center text my-3">AdminProject</h5>
+           <h5 class="text-center text my-3">AdminProject</h5>
         <nav class="sidebar-nav mt-4">
             <!-- El enlace de Inicio apunta al dashboard -->
             <a href="<?= site_url('dashboard') ?>"><i class="fas fa-home"></i> INICIO</a>
-            <!--<a href="<?= site_url('recursos') ?>"><i class="fas fa-star"></i> RECURSOS</a> -->
-            <!--<a href="<?= site_url('tareas') ?>"><i class="fas fa-tasks"></i> TAREAS</a> -->
-            <!-- El enlace de Ajustes ahora está activo -->
             <a href="<?= site_url('ajustes') ?>"><i class="fas fa-cog"></i> AJUSTES</a>
         </nav>
     </div>
@@ -36,12 +33,15 @@
             </div>
 
             <!-- CONTENIDO ESPECÍFICO DE LA PÁGINA DE AJUSTES -->
-            <div class="container-fluid">
+                    <div class="container-fluid">
                 <div class="row g-4">
+                    <?php if ($userData['rol'] === 'administrador'): ?>
                     <div class="col-12 col-md-6 col-lg-6"><a href="<?= site_url('/ajustes/masterdata') ?>" class="settings-card"><i class="icon fas fa-database"></i><span class="title">Master Data</span></a></div>
-                    <div class="col-12 col-md-6 col-lg-6"><a href="<?= site_url('ajustes/generales') ?>" class="settings-card"><i class="icon fas fa-sliders-h"></i><span class="title">Configuración general</span></a></div>
                     <div class="col-12 col-md-6 col-lg-6"><a href="<?= site_url('ajustes/usuarios') ?>" class="settings-card"><i class="icon fas fa-users-cog"></i><span>Usuarios</span></a></div>
                     <div class="col-12 col-md-6 col-lg-6"><a href="<?= site_url('catalogos') ?>" class="settings-card"><i class="icon fas fa-folder"></i><span class="title">Catálogos</span></a></div>
+                    <?php endif; ?>
+                    <div class="col-12 col-md-6 col-lg-6"><a href="<?= site_url('ajustes/generales') ?>" class="settings-card"><i class="icon fas fa-sliders-h"></i><span class="title">Configuración general</span></a></div>
+                    
                 </div>
             </div>
             <!-- FIN DEL CONTENIDO ESPECÍFICO -->
@@ -60,8 +60,6 @@
     <div class="offcanvas-body">
         <nav class="sidebar-nav">
             <a href="<?= site_url('dashboard') ?>"><i class="fas fa-home"></i> INICIO</a>
-            <a href="#"><i class="fas fa-star"></i> RECURSOS</a>
-            <a href="#"><i class="fas fa-tasks"></i> TAREAS</a>
            <a href="<?= site_url('ajustes') ?>"><i class="fas fa-cog"></i> AJUSTES</a>
         </nav>
     </div>

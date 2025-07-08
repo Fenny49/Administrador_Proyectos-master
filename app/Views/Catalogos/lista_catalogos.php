@@ -12,6 +12,7 @@
     <div class="card shadow mb-4">
         <div class="card-body">
             <div class="table-responsive">
+                <!-- La tabla ya tiene el id="dataTable", perfecto para DataTables -->
                 <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
                     <thead>
                         <tr>
@@ -43,6 +44,7 @@
             </div>
         </div>
     </div>
+    <a href="<?= site_url('/catalogos') ?>" class="btn btn-secondary"><i class="fas fa-arrow-left"></i> Volver a Catálogos</a>
 </div>
 
 <!-- Modal para Crear/Editar -->
@@ -74,68 +76,57 @@
 
 <!-- Incluir SweetAlert2 y jQuery -->
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script> <!-- Asegúrate de tener jQuery -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+<!-- Archivos necesarios para DataTables -->
+<link rel="stylesheet" href="https://cdn.datatables.net/2.0.7/css/dataTables.bootstrap5.css">
+<script src="https://cdn.datatables.net/2.0.7/js/dataTables.js"></script>
+<script src="https://cdn.datatables.net/2.0.7/js/dataTables.bootstrap5.js"></script>
 
 <script>
 $(document).ready(function() {
     const catalogType = '<?= esc($catalogType, 'js') ?>';
     let editMode = false;
+
+    // ==================================================
+    // INICIALIZACIÓN DE DATATABLE
+    // ==================================================
+    $('#dataTable').DataTable({
+        "language": {
+            "url": "https://cdn.datatables.net/plug-ins/2.0.7/i18n/es-MX.json"
+        },
+        "order": [[ 0, "asc" ]], // Ordenar por la primera columna (ID)
+        "columnDefs": [
+            { "orderable": false, "targets": -1 } // La última columna (Acciones) no se puede ordenar
+        ]
+    });
     
     // Abrir modal para NUEVO registro
     $('#btn-nuevo').on('click', function() {
         editMode = false;
         $('#catalog-form')[0].reset();
-        $('#modal-title').text('Nuevo Registro en <?= esc($title, 'js') ?>');
+        $('#modal-title').text('Nuevo Registro en <?= esc($title, 'js') ?>').css('color', 'black');
         $('#item-id').val('');
         $('#catalog-modal').modal('show');
     });
 
+    // ==================================================
+    // EVENTOS DELEGADOS PARA BOTONES DENTRO DE DATATABLE
+    // ==================================================
     // Abrir modal para EDITAR registro
-    $('.btn-editar').on('click', function() {
+    $('#dataTable tbody').on('click', '.btn-editar', function() {
         editMode = true;
         const id = $(this).data('id');
         const name = $(this).data('name');
         
-        $('#modal-title').text('Editar Registro en <?= esc($title, 'js') ?>');
+        $('#modal-title').text('Editar Registro en <?= esc($title, 'js') ?>').css('color', 'black');
         $('#item-id').val(id);
         $('#item-name').val(name);
         $('#catalog-modal').modal('show');
     });
 
-    // Enviar formulario (Crear o Actualizar)
-    $('#catalog-form').on('submit', function(e) {
-        e.preventDefault();
-        const id = $('#item-id').val();
-        const name = $('#item-name').val();
-        let url = '';
-        
-        if (editMode) {
-            url = `<?= site_url('catalogos/update/') ?>${catalogType}/${id}`;
-        } else {
-            url = `<?= site_url('catalogos/create/') ?>${catalogType}`;
-        }
-        
-        $.ajax({
-            url: url,
-            method: 'POST',
-            data: { name: name },
-            dataType: 'json',
-            success: function(response) {
-                $('#catalog-modal').modal('hide');
-                if (response.success) {
-                    Swal.fire('¡Éxito!', response.message, 'success').then(() => location.reload());
-                } else {
-                    Swal.fire('Error', response.message, 'error');
-                }
-            },
-            error: function() {
-                Swal.fire('Error', 'No se pudo comunicar con el servidor.', 'error');
-            }
-        });
-    });
-
     // Eliminar registro
-    $('.btn-eliminar').on('click', function() {
+    $('#dataTable tbody').on('click', '.btn-eliminar', function() {
         const id = $(this).data('id');
         
         Swal.fire({
@@ -164,6 +155,32 @@ $(document).ready(function() {
                         Swal.fire('Error', 'No se pudo comunicar con el servidor.', 'error');
                     }
                 });
+            }
+        });
+    });
+    
+    // Enviar formulario (Crear o Actualizar) - Este no necesita cambios
+    $('#catalog-form').on('submit', function(e) {
+        e.preventDefault();
+        const id = $('#item-id').val();
+        const name = $('#item-name').val();
+        let url = editMode ? `<?= site_url('catalogos/update/') ?>${catalogType}/${id}` : `<?= site_url('catalogos/create/') ?>${catalogType}`;
+        
+        $.ajax({
+            url: url,
+            method: 'POST',
+            data: { name: name },
+            dataType: 'json',
+            success: function(response) {
+                $('#catalog-modal').modal('hide');
+                if (response.success) {
+                    Swal.fire('¡Éxito!', response.message, 'success').then(() => location.reload());
+                } else {
+                    Swal.fire('Error', response.message, 'error');
+                }
+            },
+            error: function() {
+                Swal.fire('Error', 'No se pudo comunicar con el servidor.', 'error');
             }
         });
     });

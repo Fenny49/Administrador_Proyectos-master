@@ -1,3 +1,4 @@
+
 <?= $this->extend('layouts/main') ?> <!-- Asume que tienes un layout principal -->
 
 <?= $this->section('content') ?>
@@ -12,30 +13,11 @@
                     <div class="card-body">
                         <div class="row no-gutters align-items-center">
                             <div class="col mr-2">
-                                <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">Catálogo</div>
-                                <div class="h5 mb-0 font-weight-bold text-gray-800">Estatus</div>
+                                
+                                <div class="h5 mb-0 font-weight-bold text-primary text-middle">Estatus</div>
                             </div>
                             <div class="col-auto">
                                 <i class="fas fa-check-circle fa-2x text-gray-300"></i>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </a>
-        </div>
-
-        <!-- Tarjeta para Tipos de Costo -->
-        <div class="col-xl-3 col-md-6 mb-4">
-            <a href="<?= site_url('catalogos/list/tipocosto') ?>" class="card-link">
-                 <div class="card border-left-success shadow h-100 py-2">
-                    <div class="card-body">
-                        <div class="row no-gutters align-items-center">
-                            <div class="col mr-2">
-                                <div class="text-xs font-weight-bold text-success text-uppercase mb-1">Catálogo</div>
-                                <div class="h5 mb-0 font-weight-bold text-gray-800">Tipos de Costo</div>
-                            </div>
-                            <div class="col-auto">
-                                <i class="fas fa-dollar-sign fa-2x text-gray-300"></i>
                             </div>
                         </div>
                     </div>
@@ -50,8 +32,7 @@
                     <div class="card-body">
                         <div class="row no-gutters align-items-center">
                             <div class="col mr-2">
-                                <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">Catálogo</div>
-                                <div class="h5 mb-0 font-weight-bold text-gray-800">Prioridades</div>
+                                <div class="h5 mb-0 font-weight-bold text-gray-800 text-warning">Prioridades</div>
                             </div>
                             <div class="col-auto">
                                 <i class="fas fa-exclamation-triangle fa-2x text-gray-300"></i>
@@ -61,17 +42,14 @@
                 </div>
             </a>
         </div>
-    </div>
-</div>
-             <!-- Tarjeta para Roles -->
+        <!-- Tarjeta para Roles -->
             <div class="col-xl-3 col-md-6 mb-4">
                 <a href="<?= site_url('catalogos/list/roles') ?>" class="card-link">
                     <div class="card border-left-info shadow h-100 py-2">
                         <div class="card-body">
                             <div class="row no-gutters align-items-center">
                                 <div class="col mr-2">
-                                    <div class="text-xs font-weight-bold text-info text-uppercase mb-1">Catálogo</div>
-                                    <div class="h5 mb-0 font-weight-bold text-gray-800">Roles de Usuario</div>
+                                    <div class="h5 mb-0 font-weight-bold text-info">Roles de Usuario</div>
                                 </div>
                                 <div class="col-auto">
                                     <i class="fas fa-user-shield fa-2x text-gray-300"></i>
@@ -81,6 +59,10 @@
                     </div>
                 </a>
             </div>
+            
+    </div>
+</div>
+             
 <style>
     .card-link {
         text-decoration: none;
