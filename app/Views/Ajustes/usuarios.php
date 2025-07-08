@@ -18,7 +18,7 @@
 <div class="data-panel">
     <div class="card mb-4" style="background-color: var(--sidebar-bg);">
         <div class="card-body">
-            <h5 class="card-title">Filtrar por Proyecto</h5>
+            <h5 class="card-title ">Filtrar por Proyecto</h5>
             <form action="<?= site_url('ajustes/usuarios') ?>" method="GET" class="d-flex flex-wrap gap-2">
                 <select name="proyecto_id" class="form-select form-select-sm flex-grow-1">
                     <option value="">-- Mostrar Todos --</option>
@@ -119,73 +119,85 @@
 
 <script>
 $(document).ready(function() {
-    const resources = <?= json_encode($resources ?? ['users' => [], 'groups' => []]) ?>;
-    let table;
-    let currentViewType = 'users';
+    const resources = <?= json_encode($resources ?? ['users' => [], 'groups' => []]) ?>;
+    let table;
+    let currentViewType = 'users';
 
-    function setupTable(viewType) {
-        let columns = [];
-        let data = [];
-        let title = '<?= $proyecto_filtrado ? 'Miembros de: ' . esc($proyecto_filtrado['nombre']) : 'Todos' ?>';
-        let columnDefs = [];
+    function setupTable(viewType) {
+        let columns = [];
+        let data = [];
+        let title = '<?= $proyecto_filtrado ? 'Miembros de: ' . esc($proyecto_filtrado['nombre']) : 'Todos' ?>';
+        let columnDefs = [];
 
-        $('#btn-add-user').toggle(viewType === 'users');
-        $('#btn-add-group').toggle(viewType === 'groups');
+        $('#btn-add-user').toggle(viewType === 'users');
+        $('#btn-add-group').toggle(viewType === 'groups');
 
-        if (viewType === 'users') {
-            $('#table_title').text(title.replace('Miembros de', 'Usuarios en') || 'Todos los Usuarios');
-            
-            // Columnas para Usuarios (sin Foto ni Acciones)
-            columns = [
-                { title: "ID", data: "Id_usuario" },
-                { title: "Nombre", data: "nombre_completo" },
-                { title: "Email", data: "Correo" },
-                { title: "Rol", data: "Rol" },
-                { title: "Estado", data: "Estado" }
-            ];
-            data = (resources.users || []).map(user => ({...user, nombre_completo: user.nombre_completo || `${user.Nombre} ${user.Apellido_Paterno}`.trim()}));
-            
-            columnDefs = [
-                {
-                    targets: 4, // Índice de la columna "Estado"
-                    render: (data, type, row) => {
-                        if (row.Estado !== undefined && row.Estado !== null) return `<span class="badge rounded-pill ${row.Estado == 1 ? 'text-bg-success' : 'text-bg-secondary'}">${row.Estado == 1 ? 'Activo' : 'Inactivo'}</span>`;
-                        return '<span class="badge rounded-pill text-bg-info">Asignado</span>';
-                    }
-                }
-            ];
-        } else {
-            $('#table_title').text(title.replace('Miembros de', 'Grupos en') || 'Todos los Grupos');
-            
-            // Columnas para Grupos (sin Acciones)
-            columns = [
-                { title: "ID", data: "GPO_ID" },
-                { title: "Nombre del Grupo", data: "GPO_NOM" },
-                { title: "Descripción", data: "GPO_DESC" }
-            ];
-            data = resources.groups || [];
-            columnDefs = []; // No se necesita ninguna definición de columna especial
-        }
+        if (viewType === 'users') {
+            $('#table_title').text(title.replace('Miembros de', 'Usuarios en') || 'Todos los Usuarios');
+            
+            columns = [
+                { title: "ID", data: "Id_usuario" },
+                { title: "Nombre", data: "nombre_completo" },
+                { title: "Email", data: "Correo" },
+                { title: "Rol", data: "Rol" },
+                { title: "Estado", data: "Estado" }
+            ];
+            data = (resources.users || []).map(user => ({...user, nombre_completo: user.nombre_completo || `${user.Nombre} ${user.Apellido_Paterno}`.trim()}));
+            
+            columnDefs = [
+                {
+                    targets: 4, 
+                    render: (data, type, row) => {
+                        if (row.Estado !== undefined && row.Estado !== null) return `<span class="badge rounded-pill ${row.Estado == 1 ? 'text-bg-success' : 'text-bg-secondary'}">${row.Estado == 1 ? 'Activo' : 'Inactivo'}</span>`;
+                        return '<span class="badge rounded-pill text-bg-info">Asignado</span>';
+                    }
+                }
+            ];
+        } else {
+            $('#table_title').text(title.replace('Miembros de', 'Grupos en') || 'Todos los Grupos');
+            
+            columns = [
+                { title: "ID", data: "GPO_ID" },
+                { title: "Nombre del Grupo", data: "GPO_NOM" },
+                { title: "Descripción", data: "GPO_DESC" }
+            ];
+            data = resources.groups || [];
+            columnDefs = []; 
+        }
 
-        if ($.fn.DataTable.isDataTable('#main_table')) {
-            table.destroy();
-            $('#main_table').empty();
-        }
-        
-        table = $('#main_table').DataTable({
-            "pageLength": 10, "dom": 't<"d-flex justify-content-center pt-3"p>',
-            "language": { "emptyTable": "No hay datos para mostrar.", "paginate": { "previous": "‹", "next": "›" } },
-            "columns": columns, "data": data, "columnDefs": columnDefs
-        });
-    }
+        if ($.fn.DataTable.isDataTable('#main_table')) {
+            table.destroy();
+            $('#main_table').empty();
+        }
+        
+        table = $('#main_table').DataTable({
+            "dom": '<"row mb-3"<"col-sm-12"f>>' + // <-- ÚNICO CAMBIO AQUÍ
+                   '<"row"<"col-sm-12"tr>>' +
+                   '<"row"<"col-sm-12 col-md-5"i><"col-sm-12 col-md-7"p>>',
 
-    $('input[name="view_type"]').on('change', function() {
-        currentViewType = this.value;
-        setupTable(currentViewType);
-    });
-    
-    // Inicia la tabla con la vista de usuarios por defecto
-    setupTable('users');
+            "language": {
+                "emptyTable": "No hay datos para mostrar.",
+                "paginate": { "previous": "‹", "next": "›" },
+                "search": "Buscar:",
+                "lengthMenu": "Mostrar _MENU_ registros por página",
+                "info": "Mostrando _START_ a _END_ de _TOTAL_ registros",
+                "infoEmpty": "Mostrando 0 registros",
+                "infoFiltered": "(filtrado de _MAX_ registros totales)"
+            },
+            
+            "pageLength": 5, 
+            "columns": columns, 
+            "data": data, 
+            "columnDefs": columnDefs
+        });
+    }
+
+    $('input[name="view_type"]').on('change', function() {
+        currentViewType = this.value;
+        setupTable(currentViewType);
+    });
+    
+    setupTable('users');
 });
 </script>
 <?= $this->endSection() ?>

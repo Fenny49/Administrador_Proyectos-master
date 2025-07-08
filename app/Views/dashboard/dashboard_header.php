@@ -24,6 +24,7 @@
             --border-color: #dee2e6;
             --form-input-bg: #ffffff;
             --form-input-text: #212529;
+            --form-label:  #212529;
             
             /* Variables de acento comunes */
             --brand-purple: #8e44ad; 
@@ -70,7 +71,7 @@
         
         /* CAMBIO 1: Ajustes en el estilo de la tabla */
         .project-table {
-            color: var(--text-light);
+            color: black;
             border-collapse: collapse; /* Usamos bordes colapsados */
             width: 100%;
         }
@@ -137,7 +138,8 @@
         .offcanvas { background-color: var(--sidebar-bg); }
          .offcanvas-body, .offcanvas-title { color:rgb(203, 210, 216); }
         .main-panel, .data-panel { background-color: var(--panel-bg); border-radius: 20px; padding: 1.5rem; box-shadow: 0 5px 15px rgba(0,0,0,0.05); } 
-      
+        .colorBlack {color: black};
+        .colorBlue (color:rgb(0, 0, 121));
     </style>
 
 

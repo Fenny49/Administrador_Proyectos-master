@@ -40,7 +40,7 @@
                 </div>
                 <div class="d-flex align-items-center">
                     <label for="periodoSelect" class="form-label me-2 mb-0"><strong>Periodo:</strong></label>
-                    <select class="form-select" id="periodoSelect" style="width: 120px; background-color: var(--panel-light-bg); color: var(--text-light); border-color: #555;">
+                    <select class="form-select" id="periodoSelect" >
                         <?php for ($i = date('Y'); $i >= 2020; $i--): ?>
                             <option value="<?= $i ?>" <?= ($i == $selectedYear) ? 'selected' : '' ?>><?= $i ?></option>
                         <?php endfor; ?>
@@ -56,6 +56,7 @@
                             <th>No.</th><th>Nombre</th><th>Prioridad</th><th>Descripción</th><th>Fecha Inicio</th><th>Fecha Fin</th><th>Status</th><th>Acciones</th>
                         </tr>
                     </thead>
+                    
                     <tbody>
                         <?php foreach ($proyectos as $project): ?>
                             <tr id="project-row-<?= esc($project['id_proyecto']) ?>">
@@ -68,10 +69,11 @@
                                 <td><span class="badge-priority badge-<?= strtolower(esc($project['status'])) ?>"><?= esc($project['status']) ?></span></td>
                                 <td class="table-actions">
                                     <a href="<?= site_url('proyectos/detalles/' . $project['id_proyecto']) ?>" title="Ver Detalles"><i class="fas fa-list-alt"></i></a>
-                                   <a href="<?= site_url('tareas/index/' . $project['id_proyecto']) ?>" title="Añadir Tareas"><i class="fas fa-plus-circle"></i></a>
-                                    <a href="<?= site_url('gestion?proyecto_id=' . $project['id_proyecto']) ?>" title="Gestionar Equipo del Proyecto"><i class="fas fa-user-plus"></i></a>
+                                    <?php if ($userData['rol'] === 'administrador'): ?>
+                                   <a href="<?= site_url('tareas/crear/' . $project['id_proyecto']) ?>" title="Añadir Tareas"><i class="fas fa-plus-circle"></i></a>
+                                     <a href="<?= site_url('gestion?proyecto_id=' . $project['id_proyecto']) ?>" title="Gestionar Equipo del Proyecto"><i class="fas fa-user-plus"></i></a>
                                     <a href="<?= site_url('tareas/listar/' . $project['id_proyecto']) ?>" title="Ver y Editar Tareas"><i class="fas fa-tasks"></i></a>
-                                    
+                                    <?php endif; ?>
                                     <?php if ($userData['rol'] === 'administrador'): ?>
                                         <a href="#" class="ms-1" title="Editar Proyecto" 
                                            data-bs-toggle="modal" 
@@ -101,11 +103,11 @@
 <div class="modal fade" id="editProjectModal" tabindex="-1" aria-labelledby="editProjectModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="editProjectModalLabel">Editar Proyecto</h5>
+            <div class="modal-header colorBlack">
+                <h5 class="modal-title " id="editProjectModalLabel">Editar Proyecto</h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <div class="modal-body">
+            <div class="modal-body colorBlack">
                 <form id="editProjectForm" onsubmit="return false;">
                     <!-- Campo oculto para guardar el ID -->
                     <input type="hidden" id="editProjectId">
@@ -117,13 +119,13 @@
                     </div>
 
                     <!-- Descripción -->
-                    <div class="mb-3">
-                        <label for="editProjectDescription" class="form-label">Descripción</label>
+                    <div class="mb-3 ">
+                        <label for="editProjectDescription" class="form-label ">Descripción</label>
                         <textarea class="form-control" id="editProjectDescription" rows="3"></textarea>
                     </div>
 
                     <!-- Fila para Prioridad y Status -->
-                    <div class="row">
+                    <div class="row ">
                         <div class="col-md-6 mb-3">
                             <label for="editProjectPriority" class="form-label">Prioridad</label>
                             <select class="form-select" id="editProjectPriority">
@@ -202,8 +204,10 @@ document.addEventListener('DOMContentLoaded', function () {
                     {
                         extend: 'csvHtml5',
                         text: '<i class="fas fa-file-csv me-2"></i>CSV',
+                        fieldSeparator: ';', // <--- ¡AQUÍ ESTÁ LA CLAVE!
+                        bom: true,    
                         exportOptions: {
-                            columns: [0, 1, 2, 3, 4, 5, 6] // Exporta las columnas 0 a 6
+                        columns: [0, 1, 2, 3, 4, 5, 6] // Exporta las columnas 0 a 6
                         }
                     },
                     {
@@ -231,6 +235,9 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         ]
     });
+    $('#customSearchInput').on('keyup', function() {
+    table.search(this.value).draw();
+});
     table.buttons().container().appendTo('.actions-bar');
     
     // Referencias a los elementos del DOM

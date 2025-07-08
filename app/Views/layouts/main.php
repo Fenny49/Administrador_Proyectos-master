@@ -8,23 +8,40 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
-    
+
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css">
+    <!-- DataTables CSS -->
+<link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css">
     <style>
-        /* Define las variables para el Tema Claro (por defecto) */
-        :root {
-            --body-bg: #f0f2f5; --panel-bg: #ffffff; --sidebar-bg: #ffffff; 
-            --sidebar-text: #495057; --sidebar-header-text: #212529; --sidebar-hover-bg: #e9ecef;
-            --main-text: #212529; --secondary-text: #6c757d; --border-color: #dee2e6;
-            --form-input-bg: #ffffff; --form-input-text: #212529;
-            --brand-purple: #8e44ad; --accent-yellow: #ffc107;
+      :root {
+            --body-bg: #f0f2f5;
+            --panel-bg: #ffffff;
+            --sidebar-bg: #ffffff; 
+            --sidebar-text: #495057;
+            --sidebar-header-text: #212529;
+            --sidebar-hover-bg: #e9ecef;
+            --main-text: #212529; 
+            --secondary-text: #6c757d;
+            --border-color: #dee2e6;
+            --form-input-bg: #ffffff;
+            --form-input-text: #212529;
+            --brand-purple: #8e44ad; 
+            --accent-yellow: #ffc107;
         }
 
         /* Sobreescribe las variables solo si el body tiene la clase 'theme-dark' */
         body.theme-dark {
-            --body-bg: #20202d; --panel-bg: #2c2c3e; --sidebar-bg: #2c2c3e;
-            --sidebar-header-text: #ffffff; --sidebar-text: #a0a0b0; --sidebar-hover-bg: #20202d;
-            --main-text: #e0e0e0; --secondary-text: #a0a0b0; 
-            --border-color: #4a4a6a; --form-input-bg: #4a4a6a; --form-input-text: #e0e0e0;
+            --body-bg: #20202d;
+            --panel-bg: #2c2c3e;
+            --sidebar-bg: #2c2c3e;
+            --sidebar-header-text: #ffffff;
+            --sidebar-text: #a0a0b0;
+            --sidebar-hover-bg: #20202d;
+            --main-text:rgb(255, 255, 255); 
+            --secondary-text: #a0a0b0; 
+            --border-color: #4a4a6a;
+            --form-input-bg: #4a4a6a;
+            --form-input-text: #e0e0e0;
         }
 
         /* --- Estilos Generales que usan las variables --- */
@@ -60,10 +77,82 @@
 
         .form-control, .form-select { background-color: var(--form-input-bg); border: 1px solid var(--border-color); color: var(--form-input-text); border-radius: 8px; }
         .form-control:focus, .form-select:focus { background-color: var(--form-input-bg); color: var(--form-input-text); border-color: var(--brand-purple); box-shadow: 0 0 0 0.25rem rgba(142, 68, 173, 0.25); }
+         .dataTables_wrapper .dataTables_paginate .paginate_button {
+      background-color: #f0f0f0;
+      border: 1px solid #ccc;
+      padding: 5px 10px;
+      margin: 0 2px;
+      text-decoration: none;
+      color: #333;
+      border-radius: 4px;
+    }
+
+    .dataTables_wrapper .dataTables_paginate .paginate_button.current {
+      background-color: #007bff;
+      color: white;
+      border-color: #007bff;
+    }
+
+    .dataTables_wrapper .dataTables_paginate .paginate_button:hover {
+      background-color: #ddd;
+    }
+
+    /* --- Estilos para la barra de catálogos unificada --- */
+.catalogs-bar-wrapper {
+    display: flex;
+    background-color: var(--panel-bg, #ffffff);
+    border: 1px solid var(--border-color, #dee2e6);
+    border-radius: 0.375rem; /* similar a los inputs de bootstrap */
+    box-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, .15);
+    overflow: hidden;
+    width: 100%;
+}
+
+.catalog-item {
+    flex: 1; /* Hace que cada item ocupe el mismo espacio */
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 1.5rem;
+    text-decoration: none;
+    transition: background-color 0.2s ease;
+}
+
+/* Agrega un separador vertical entre los items */
+.catalog-item:not(:last-child) {
+    border-right: 1px solid var(--border-color, #dee2e6);
+}
+
+/* Efecto al pasar el mouse */
+.catalog-item:hover {
+    background-color: var(--sidebar-hover-bg, #e9ecef);
+}
+
+.catalog-item .catalog-text {
+    font-size: 1rem;
+    font-weight: 700;
+}
+
+.catalog-item i {
+    color: #dddfeb; /* Color de los íconos originales */
+}
+
+/* Para que se vea bien en celulares (se apilan en vez de estar lado a lado) */
+@media (max-width: 768px) {
+    .catalogs-bar-wrapper {
+        flex-direction: column; /* Apila los elementos */
+    }
+    .catalog-item:not(:last-child) {
+        border-right: none;
+        border-bottom: 1px solid var(--border-color, #dee2e6); /* Separador horizontal */
+    }
+}
+
     </style>
 </head>
 
 <body class="<?= ($settings['default_theme'] ?? 'dark') === 'dark' ? 'theme-dark' : 'theme-light' ?>">
+
 
 <div class="main-container">
     <aside class="sidebar d-none d-lg-block">
@@ -93,7 +182,24 @@
     </div>
 </div>
 
+
+
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<!-- DataTables JS -->
+<script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
+<script src="https://code.jquery.com/jquery-3.7.0.js"></script>
+<script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+<script src="https://code.jquery.com/jquery-3.5.1.min.js"></script> <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/js/bootstrap.bundle.min.js"></script> <script src="<?= base_url('vendor/jquery-easing/jquery.easing.min.js') ?>"></script>
+<script src="<?= base_url('js/sb-admin-2.min.js') ?>"></script>
+<link href="https://cdn.datatables.net/1.10.21/css/dataTables.bootstrap4.min.css" rel="stylesheet">
+<script src="https://cdn.datatables.net/1.10.21/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/1.10.21/js/dataTables.bootstrap4.min.js"></script>
+<script>
+    // Inicializa todos los popovers en la página
+    const popoverTriggerList = document.querySelectorAll('[data-bs-toggle="popover"]');
+    const popoverList = [...popoverTriggerList].map(popoverTriggerEl => new bootstrap.Popover(popoverTriggerEl));
+</script>
 <?= $this->renderSection('scripts') ?>
 </body>
 </html>

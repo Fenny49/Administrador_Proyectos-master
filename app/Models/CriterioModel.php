@@ -13,7 +13,8 @@ class CriterioModel extends Model
     protected $allowedFields    = [
         'TAREA_ID', 
         'CRITERIO_DESCRIPCION', 
-        'PUNTOS_ESTIMADOS'
+        'PUNTOS_ESTIMADOS',
+        'CUMPLIDO'
     ];
 
     /**
@@ -27,8 +28,9 @@ class CriterioModel extends Model
             return []; // Si no hay ID de tarea, devuelve un array vacío
         }
         
-        return $this->where('TAREA_ID', $tareaId)
-                    ->orderBy('CRITERIO_ID', 'ASC')
-                    ->findAll();
+         return $this->select('CRITERIO_ID, CRITERIO_DESCRIPCION, PUNTOS_ESTIMADOS, CUMPLIDO, FECHA_CREACION')
+                ->where('TAREA_ID', $tareaId)
+                ->orderBy('CRITERIO_ID', 'ASC')
+                ->findAll();
     }
 }

@@ -154,38 +154,53 @@ class TareaModel extends Model
      * @return array
      */
     
-    public function obtenerTareasConCalculos($id_proyecto)
-    {
-        return $this->db->table($this->table . ' t')
-            ->select("
-                t.TAR_ID,
-                t.TAR_NOM,
-                t.TAR_FECHAFIN,
-                t.STAT_ID as original_stat_id,
-                
-                -- REQUERIMIENTO: Calcular días restantes
-                CASE 
-                    WHEN t.TAR_FECHAFIN IS NULL THEN NULL
-                    ELSE DATEDIFF(day, GETDATE(), t.TAR_FECHAFIN) 
-                END AS dias_restantes,
-                
-                -- REQUERIMIENTO: Calcular el nombre del estado dinámicamente
-                CASE 
-                    WHEN t.STAT_ID IN (3, 5) THEN e.STAT_NOM -- Si es 'Completado' o 'Cancelado', no se cambia
-                    WHEN t.TAR_FECHAFIN < CAST(GETDATE() AS DATE) THEN 'Atrasado'
-                    ELSE e.STAT_NOM 
-                END AS estado_calculado,
+ public function obtenerListaTareasDeProyecto($id_proyecto)
+{
+    $builder = $this->db->table($this->table . ' t');
+    
+    // Consulta principal que selecciona todos los campos necesarios
+    $builder->select("
+        t.TAR_ID,
+        t.TAR_NOM,
+        t.TAR_FECHAFIN,
+        
+        -- 1. Conteo de criterios
+        (SELECT COUNT(*) FROM dbo.CRITERIOS_ACEPTACION ca WHERE ca.TAREA_ID = t.TAR_ID) AS numero_criterios,
+        
+        -- 2. Cálculo de días restantes
+        CASE 
+            WHEN t.TAR_FECHAFIN IS NULL THEN NULL
+            ELSE DATEDIFF(day, GETDATE(), t.TAR_FECHAFIN) 
+        END AS dias_restantes,
+        
+        -- 3. Cálculo del estado
+        CASE 
+            WHEN e.STAT_NOM IN ('Completado', 'Cancelado') THEN e.STAT_NOM
+            WHEN t.TAR_FECHAFIN < CAST(GETDATE() AS DATE) THEN 'Atrasado'
+            ELSE e.STAT_NOM
+        END AS estado_calculado
+    ")
+    ->join('dbo.ESTATUS e', 't.STAT_ID = e.STAT_ID', 'left') // Join para obtener el nombre del estado
+    ->where('t.PROY_ID', $id_proyecto);
 
-                -- REQUERIMIENTO: Calcular el ID del estado dinámicamente
-                CASE 
-                    WHEN t.STAT_ID IN (3, 5) THEN t.STAT_ID
-                    WHEN t.TAR_FECHAFIN < CAST(GETDATE() AS DATE) THEN 6 -- ID de 'Atrasado'
-                    ELSE t.STAT_ID 
-                END AS stat_id_calculado
-            ")
-            ->join('dbo.ESTATUS e', 't.STAT_ID = e.STAT_ID', 'left')
-            ->where('t.PROY_ID', $id_proyecto)
-            ->get()
-            ->getResultArray();
-    }
+    // Lógica de ordenamiento por urgencia
+    $orderByClause = "
+        CASE
+            -- Grupo 1: Tareas atrasadas (las más antiguas primero)
+            WHEN t.TAR_FECHAFIN < GETDATE() AND e.STAT_NOM NOT IN ('Completado', 'Cancelado') THEN 1
+            -- Grupo 2: Tareas activas (las más próximas a vencer primero)
+            WHEN t.TAR_FECHAFIN >= GETDATE() AND e.STAT_NOM NOT IN ('Completado', 'Cancelado') THEN 2
+            -- Grupo 3: Tareas sin fecha
+            WHEN t.TAR_FECHAFIN IS NULL AND e.STAT_NOM NOT IN ('Completado', 'Cancelado') THEN 3
+            -- Grupo 4: Tareas completadas o canceladas (al final)
+            ELSE 4
+        END ASC,
+        t.TAR_FECHAFIN ASC
+    ";
+
+    // Pasamos la cláusula de ordenamiento compleja
+    $builder->orderBy($orderByClause, '', false);
+
+    return $builder->get()->getResultArray();
+}
 }

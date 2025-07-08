@@ -23,7 +23,7 @@
             <div>
                 <!-- REQUERIMIENTO 1: MOSTRAR NOMBRE DEL PROYECTO -->
                 <h1 class="h3 mb-0" id="titulo-pagina">Añadir Tarea al Proyecto</h1>
-                <small class="text fs-5 fw-bold text-primary">
+                <small class="text-muted fs-5 fw-bold text-primary">
                     <?= esc($proyecto['nombre'] ?? 'Proyecto Desconocido') ?>
                 </small>
             </div>
@@ -168,7 +168,7 @@
                 setTimeout(() => { estadoGuardado.textContent = ''; }, 500);
             }, 3000);
         };
-
+        
         const agregarFilaCriterio = (descripcion, puntos, criterioId) => {
             const nuevaFila = document.createElement('tr');
             nuevaFila.setAttribute('data-criterio-id', criterioId);

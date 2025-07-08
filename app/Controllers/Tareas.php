@@ -43,6 +43,7 @@ class Tareas extends BaseController
             'listaUsuarios' => $listaUsuarios,  // <-- Array de usuarios
             'puntosScrum'  => $puntosScrum,      // <-- Array de puntos para el combobox
             'id_proyecto'  => $id_proyecto,
+            
         ];
         
         $show_page  = view('Tareas/tareas_header', $data);
@@ -135,18 +136,30 @@ class Tareas extends BaseController
     /**
      * AJAX: Actualiza la descripción de un criterio existente.
      */
-    public function ajax_actualizar_criterio()
+   public function ajax_actualizar_criterio()
     {
         if (!$this->request->isAJAX()) { return $this->response->setStatusCode(403); }
 
-        $criterioModel = new CriterioModel();
+        $criterioModel = new \App\Models\CriterioModel();
         $id = $this->request->getPost('criterio_id');
-        $descripcion = $this->request->getPost('descripcion');
+        
+        // Preparamos un array solo con los datos que vamos a actualizar.
+        // Las claves DEBEN coincidir con la propiedad $allowedFields del CriterioModel.
+        $dataToUpdate = [
+            'CRITERIO_DESCRIPCION' => $this->request->getPost('descripcion'),
+            'PUNTOS_ESTIMADOS'    => $this->request->getPost('puntos')
+        ];
 
-        if ($criterioModel->update($id, ['descripcion' => $descripcion])) {
-            return $this->response->setJSON(['status' => 'success']);
+        // Esta es la comprobación clave. Si el array está vacío, CodeIgniter lanza el error.
+        if (empty($dataToUpdate) || !$id) {
+            return $this->response->setJSON(['status' => 'error', 'message' => 'No se proporcionaron datos para actualizar.']);
         }
-        return $this->response->setJSON(['status' => 'error', 'message' => 'No se pudo actualizar.']);
+
+        if ($criterioModel->update($id, $dataToUpdate)) {
+            return $this->response->setJSON(['status' => 'success', 'message' => 'Criterio actualizado.']);
+        }
+        
+        return $this->response->setJSON(['status' => 'error', 'message' => 'No se pudo actualizar el criterio en la base de datos.']);
     }
     
     /**
@@ -170,23 +183,24 @@ class Tareas extends BaseController
 public function listarPorProyecto($id_proyecto)
 {
     $tareaModel = new TareaModel();
-    
-    // MEJORA: Hacemos un JOIN para obtener el nombre del estado
-    $tareas = $tareaModel
-        ->select('TAREAS.*, ESTATUS.STAT_NOM') // Seleccionamos todos los campos de TAREAS y el nombre del estado
-        ->join('ESTATUS', 'ESTATUS.STAT_ID = TAREAS.STAT_ID', 'left') // Unimos con la tabla de estados
-        ->where('TAREAS.PROY_ID', $id_proyecto)
-        ->findAll();
+    $proyectoModel = new ProyectoModel();
+    $proyecto = $proyectoModel->find($id_proyecto);
+    $tareas_ordenadas = $tareaModel->obtenerListaTareasDeProyecto($id_proyecto);
+    //De aquí se pasa el nombre del proyecto a la lista de tareas
+      if (!$proyecto) {
+        throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound("El proyecto con ID $id_proyecto no fue encontrado.");
+    }
 
-     $tareaModel = new TareaModel();
-    
     $data = [
-        'settings' => session()->get('general_settings') ?? ['default_theme' => 'light'],
+        'settings' => session()->get('general_settings') ?? ['default_theme' => 'dark'],
         'userData' => session()->get('userData'),
-        // Usamos el nuevo método que hace los cálculos
-        'tareas'   => $tareaModel->obtenerTareasConCalculos($id_proyecto),
+        'tareas'   => $tareas_ordenadas, // Pasamos los datos completos
+        'proyecto' => $proyecto, // <-- PASAMOS EL OBJETO COMPLETO DEL PROYECTO A LA VISTA
         'id_proyecto' => $id_proyecto,
     ];
+
+    // MEJORA: Hacemos un JOIN para obtener el nombre del estado
+
 
     // Llamamos a la vista que crearemos a continuación
     return view('Tareas/tareas_lista', $data);
@@ -262,31 +276,56 @@ public function ajax_eliminar_tarea()
     if (!$tarea) {
         return $this->response->setJSON(['status' => 'error', 'message' => 'La tarea no existe.']);
     }
-    $proyectoId = $tarea['PROY_ID'];
+    $tareaModel = new TareaModel();
+    $tarea = $tareaModel->find($tareaId);
+    if (!$tarea) {
+        return $this->response->setJSON(['status' => 'error', 'message' => 'La tarea no existe.']);
+    }
+    // No necesitamos la variable $proyectoId para la respuesta
 
     try {
-        // --- ¡CAMBIO IMPORTANTE AQUÍ! ---
-        // En lugar de llamar al modelo, llamamos directamente al SP.
         $db = \Config\Database::connect();
         $sql = "EXEC dbo.sp_DeleteTask ?;";
         $params = [$tareaId];
         
         $db->query($sql, $params);
 
-        // Si la consulta no lanza una excepción, fue exitosa.
-        $redirectUrl = site_url('tareas/listar/' . $proyectoId);
-        
+        // --- SOLUCIÓN: SIMPLIFICAR LA RESPUESTA DE ÉXITO ---
+        // Simplemente informa al cliente que todo salió bien.
+        // El JavaScript se encargará de actualizar la vista.
         return $this->response->setJSON([
             'status' => 'success',
-            'message' => 'Tarea eliminada exitosamente.',
-            'redirect_url' => $redirectUrl
+            'message' => 'Tarea eliminada exitosamente.'
         ]);
 
     } catch (\Exception $e) {
-        // Capturamos cualquier excepción lanzada por el SP.
         return $this->response->setJSON(['status' => 'error', 'message' => 'Error en la base de datos: ' . $e->getMessage()]);
     }
 }
+public function ajax_actualizar_estado_criterio()
+    {
+        if (!$this->request->isAJAX()) {
+            return $this->response->setStatusCode(403);
+        }
 
+        $data = $this->request->getJSON();
+        $criterioId = $data->criterio_id ?? null;
+        $cumplido = isset($data->cumplido) ? (int)$data->cumplido : null;
 
+        if (!$criterioId || !in_array($cumplido, [0, 1], true)) {
+            return $this->response->setJSON(['status' => 'error', 'message' => 'Datos inválidos.']);
+        }
+
+        $criterioModel = new \App\Models\CriterioModel();
+
+        try {
+            if ($criterioModel->update($criterioId, ['CUMPLIDO' => $cumplido])) {
+                return $this->response->setJSON(['status' => 'success', 'message' => 'Estado actualizado.']);
+            } else {
+                return $this->response->setJSON(['status' => 'error', 'message' => 'No se pudo actualizar el criterio.']);
+            }
+        } catch (\Exception $e) {
+            return $this->response->setJSON(['status' => 'error', 'message' => 'Error en la base de datos: ' . $e->getMessage()]);
+        }
+    }
 }

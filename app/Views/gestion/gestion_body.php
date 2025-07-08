@@ -109,8 +109,7 @@ document.addEventListener('DOMContentLoaded', function() {
     showGroupsBtn.addEventListener('change', toggleElements);
     toggleElements();
 
-    // Lógica para los modales (sin cambios)
-    // ... tu código de validación de modales ...
+ 
 });
 </script>
 

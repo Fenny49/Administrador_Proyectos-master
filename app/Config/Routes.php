@@ -40,6 +40,9 @@ $routes->group('catalogos', ['filter' => 'auth'], function($routes) {
     $routes->post('create/(:segment)', 'Catalogos::create/$1');
     $routes->post('update/(:segment)/(:num)', 'Catalogos::update/$1/$2');
     $routes->post('delete/(:segment)/(:num)', 'Catalogos::delete/$1/$2');
+    $routes->get('catalogos/datos/(:segment)', 'Catalogos::datosCatalogo/$1');
+
+
 });
 $routes->get('/ajustes', 'Ajustes::index');
 $routes->get('/ajustes/generales', 'Ajustes::generales');
@@ -52,14 +55,14 @@ $routes->post('/ajustes/generales/guardar', 'Ajustes::guardarGenerales');
 //Ruta de la descarga en csv
 $routes->get('dashboard/export_csv', 'Dashboard::export_csv');
 
-$routes->get('proyectos/(:num)/gestion', 'Gestion::index/$1');
 $routes->get('/proyectos/nuevo', 'Projects::new'); 
 $routes->post('/proyectos/crear', 'Projects::create');
 $routes->post('projects/create', 'Projects::create');
 
 // También asegúrate de tener la ruta para el formulario
 $routes->get('projects/new', 'Projects::new');
-
+// En app/Config/Routes.php
+$routes->post('/projects/check_name', 'Projects::check_name');
 
 // Ruta para la nueva sección de gestión de Usuarios y Grupos
 $routes->get('/gestion', 'Gestion::index');
@@ -71,21 +74,9 @@ $routes->get('/proyectos/(:num)/gestion', 'Gestion::index/$1');
 $routes->post('/gestion/usuarios/crear', 'Gestion::crearUsuario');
 $routes->post('/gestion/grupos/crear', 'Gestion::crearGrupo');
 
-// RUTAS PARA RECIBIR LOS DATOS DE LOS FORMULARIOS
-$routes->post('gestion/crearUsuario', 'Gestion::crearUsuario');
-$routes->post('gestion/crearGrupo', 'Gestion::crearGrupo');
-
 // Ruta para ver los detalles de un proyecto específico
 $routes->get('/proyectos/detalles/(:num)', 'Proyectos::detalles/$1');
 
-// Rutas para la sección de Ajustes
-$routes->get('/ajustes/usuarios', 'Ajustes::usuarios');
-$routes->post('/ajustes/crearUsuario', 'Ajustes::crearUsuario');
-$routes->post('/ajustes/crearGrupo', 'Ajustes::crearGrupo');
-
-// --- NUEVAS RUTAS PARA EDITAR Y ELIMINAR ---
-$routes->put('/ajustes/updateUsuario/(:num)', 'Ajustes::updateUsuario/$1');
-$routes->delete('/ajustes/deleteUsuario/(:num)', 'Ajustes::deleteUsuario/$1');
 
 // En app/Config/Routes.php
 $routes->get('/ajustes', 'Ajustes::index');
@@ -98,3 +89,13 @@ $routes->post('tareas/ajax_gestionar_tarea_criterio', 'Tareas::ajax_gestionar_ta
 $routes->post('tareas/ajax_gestionar_tarea_criterio', 'Tareas::ajax_gestionar_tarea_criterio');
 $routes->post('tareas/ajax_actualizar_criterio', 'Tareas::ajax_actualizar_criterio');
 $routes->post('tareas/ajax_eliminar_criterio', 'Tareas::ajax_eliminar_criterio');
+$routes->post('tareas/ajax_actualizar_estado_criterio', 'Tareas::ajax_actualizar_estado_criterio');
+
+// --- NUEVAS RUTAS PARA EDITAR Y ELIMINAR ---
+$routes->put('/ajustes/updateUsuario/(:num)', 'Ajustes::updateUsuario/$1');
+$routes->delete('/ajustes/deleteUsuario/(:num)', 'Ajustes::deleteUsuario/$1');
+
+// Rutas para la sección de Ajustes
+$routes->get('/ajustes/usuarios', 'Ajustes::usuarios');
+$routes->post('/ajustes/crearUsuario', 'Ajustes::crearUsuario');
+$routes->post('/ajustes/crearGrupo', 'Ajustes::crearGrupo');

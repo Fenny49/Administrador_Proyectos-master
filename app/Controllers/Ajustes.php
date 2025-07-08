@@ -5,7 +5,6 @@ use App\Models\UsuarioModel;
 use App\Models\GrupoModel;
 use App\Models\ProyectoModel;
 use App\Models\DetalleGrupoModel;
-
 class Ajustes extends BaseController
 {
     /**
@@ -18,12 +17,21 @@ class Ajustes extends BaseController
             return redirect()->to('/login');
         }
 
+        // --- INICIO DEL CAMBIO ---
+        // Construimos el array 'userData' manualmente desde la sesión.
+        $userData = [
+            'rol' => strtolower($session->get('rol') ?? ''),
+            'nombre_completo' => $session->get('nombre_completo')
+            // Puedes añadir más datos si los necesitas, ej: 'id_usuario' => $session->get('id_usuario')
+        ];
+        // --- FIN DEL CAMBIO ---
+
         // Carga la configuración del tema para pasársela a la vista
         $defaults = ['default_theme' => 'dark']; 
         $settings = $session->get('general_settings') ?? $defaults;
         
         $data = [
-            'userData' => $session->get('userData'),
+            'userData' => $userData, // Usamos el array que acabamos de crear
             'settings' => $settings
         ];
         helper('url');
@@ -45,13 +53,21 @@ class Ajustes extends BaseController
         }
         helper('form');
 
+        // --- INICIO DEL CAMBIO ---
+        // Construimos el array 'userData' manualmente.
+        $userData = [
+            'rol' => strtolower($session->get('rol') ?? ''),
+            'nombre_completo' => $session->get('nombre_completo')
+        ];
+        // --- FIN DEL CAMBIO ---
+
         $defaults = [
             'allow_new_projects'    => '1', 'show_user_avatar'      => '1',
             'allow_notifications'   => '1', 'feedback_from_users'   => '1',
             'active_users'          => 'all', 'default_theme'         => 'dark',
         ];
         $data['settings'] = $session->get('general_settings') ?? $defaults;
-        $data['userData'] = $session->get('userData');
+        $data['userData'] = $userData; // Usamos el array que acabamos de crear
 
         $show_page  = view('Ajustes/ajustes_header', $data);
         $show_page .= view('ajustes/generales', $data);
@@ -61,6 +77,7 @@ class Ajustes extends BaseController
 
     /**
      * Guarda las configuraciones generales en la sesión.
+     * (Este método no necesita cambios)
      */
     public function guardarGenerales()
     {
@@ -81,7 +98,7 @@ class Ajustes extends BaseController
     /**
      * Muestra la página de gestión de Usuarios y Grupos.
      */
-    public function usuarios()
+   public function usuarios()
     {
         $session = session();
         if (!$session->get('is_logged_in')) {
@@ -139,35 +156,56 @@ class Ajustes extends BaseController
      */
     public function crearUsuario()
     {
-        $validation = \Config\Services::validation();
-        $validation->setRules([
-            'Nombre'           => 'required|alpha_space',
-            'Apellido_Paterno' => 'required|alpha_space',
-            'Apellido_Materno' => 'required|alpha_space',
-            'Codigo_User'      => 'required|numeric',
-            'Correo'           => 'required|valid_email|is_unique[usuario.Correo]',
-            'Password'         => 'required|min_length[8]'
-        ]);
+        // --- INICIO DE LA MODIFICACIÓN ---
 
-        if (!$validation->withRequest($this->request)->run()) {
-            return redirect()->back()->withInput()->with('errors', $validation->getErrors());
+        // 1. Definimos las reglas de validación de una forma más clara
+        $rules = [
+        'Nombre'  => 'required|alpha_space',
+        'Apellido_Paterno' => 'required|alpha_space',
+        'Apellido_Materno' => 'required|alpha_space',
+        'Password' => 'required|min_length[8]',
+                    'Correo' => [
+                        'rules' => 'required|valid_email|is_unique[usuario.Correo]',
+                        'errors' => [
+                            'required' => 'El correo electrónico es obligatorio.',
+                            'valid_email' => 'Por favor, introduce un correo electrónico válido.',
+                            'is_unique' => 'Este correo electrónico ya está registrado. Por favor, utiliza otro.'
+                        ]
+                    ],
+        'Codigo_User' => [
+                        'rules' => 'required|numeric|is_unique[usuario.Codigo_User]',
+                        'errors' => [
+                            'required' => 'El código de usuario es obligatorio.',
+                            'numeric' => 'El código de usuario solo debe contener números.',
+                            'is_unique' => 'Este código de usuario ya existe. Por favor, elige otro.'
+                        ]
+                    ]
+        ];
+
+                // 2. Ejecutamos la validación con el método recomendado
+        if (!$this->validate($rules)) {
+                    // Si la validación falla, regresamos al formulario con los errores.
+        return redirect()->back()->withInput()->with('errors', $this->validator->getErrors());
         }
 
+                // 3. Si la validación es exitosa, procedemos a guardar.
         $usuarioModel = new UsuarioModel();
         $data = [
-            'Nombre'           => $this->request->getPost('Nombre'),
-            'Apellido_Paterno' => $this->request->getPost('Apellido_Paterno'),
-            'Apellido_Materno' => $this->request->getPost('Apellido_Materno'),
-            'Codigo_User'      => $this->request->getPost('Codigo_User'),
-            'Correo'           => $this->request->getPost('Correo'),
-            'Password'         => password_hash($this->request->getPost('Password'), PASSWORD_DEFAULT),
-            'Rol'              => $this->request->getPost('Rol'),
-            'Estado'           => $this->request->getPost('Estado')
+        'Nombre'=> $this->request->getPost('Nombre'),
+        'Apellido_Paterno' => $this->request->getPost('Apellido_Paterno'),
+        'Apellido_Materno' => $this->request->getPost('Apellido_Materno'),
+        'Codigo_User'=> $this->request->getPost('Codigo_User'),
+        'Correo' => $this->request->getPost('Correo'),
+        'Password'=> password_hash($this->request->getPost('Password'), PASSWORD_DEFAULT),
+        'Rol'=> $this->request->getPost('Rol'),
+        'Estado'=> $this->request->getPost('Estado')
         ];
         $usuarioModel->insert($data);
 
         return redirect()->to('/ajustes/usuarios')->with('success', 'Usuario creado con éxito.');
-    }
+
+                // --- FIN DE LA MODIFICACIÓN ---
+        }
 
     /**
      * Procesa la creación de un nuevo grupo desde el formulario modal.
@@ -191,67 +229,6 @@ class Ajustes extends BaseController
         return redirect()->to('/ajustes/usuarios')->with('success', 'Grupo creado con éxito.');
     }
 
-    public function updateUsuario($id)
-    {
-        $usuarioModel = new UsuarioModel();
-        $data = [
-            'Nombre'           => $this->request->getPost('Nombre'),
-            'Apellido_Paterno' => $this->request->getPost('Apellido_Paterno'),
-            'Apellido_Materno' => $this->request->getPost('Apellido_Materno'),
-            'Codigo_User'      => $this->request->getPost('Codigo_User'),
-            'Correo'           => $this->request->getPost('Correo'),
-            'Rol'              => $this->request->getPost('Rol'),
-            'Estado'           => $this->request->getPost('Estado'),
-        ];
-
-        $password = $this->request->getPost('Password');
-        if (!empty($password)) {
-            $data['Password'] = password_hash($password, PASSWORD_DEFAULT);
-        }
-
-        $usuarioModel->update($id, $data);
-        return redirect()->to('/ajustes/usuarios')->with('success', 'Usuario actualizado con éxito.');
-    }
-
-    /**
-     * Procesa la eliminación de un usuario.
-     */
-    public function deleteUsuario($id)
-    {
-        $usuarioModel = new UsuarioModel();
-        $detalleGrupoModel = new DetalleGrupoModel();
-        $detalleGrupoModel->where('USU_ID', $id)->delete();
-        
-        $usuarioModel->delete($id);
-        return redirect()->to('/ajustes/usuarios')->with('success', 'Usuario eliminado con éxito.');
-    }
-
-    /**
-     * Procesa la actualización de un grupo existente.
-     */
-    public function updateGrupo($id)
-    {
-        $grupoModel = new GrupoModel();
-        $data = [
-            'GPO_NOM'  => $this->request->getPost('GPO_NOM'),
-            'GPO_DESC' => $this->request->getPost('GPO_DESC'),
-        ];
-        $grupoModel->update($id, $data);
-        return redirect()->to('/ajustes/usuarios')->with('success', 'Grupo actualizado con éxito.');
-    }
-
-    /**
-     * Procesa la eliminación de un grupo.
-     */
-    public function deleteGrupo($id)
-    {
-        $grupoModel = new GrupoModel();
-        $detalleGrupoModel = new DetalleGrupoModel();
-        $detalleGrupoModel->where('GPO_ID', $id)->delete();
-
-        $grupoModel->delete($id);
-        return redirect()->to('/ajustes/usuarios')->with('success', 'Grupo eliminado con éxito.');
-    }
     /**
      * Muestra la página de gestión de Master Data.
      */

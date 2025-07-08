@@ -6,7 +6,7 @@ use CodeIgniter\Model;
 
 class Usuario extends Model
 {
-    protected $table = 'dbo.usuario';
+    protected $table = 'usuario';
     protected $allowedFields = ['Nombre', 'Apellido_Paterno', 
     'Apellido_Materno', 'Codigo_User', 
     'Correo', 'Password', 'rol'];
